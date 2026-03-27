@@ -1,6 +1,6 @@
 """
-模拟相关API路由
-Step2: Zep实体读取与过滤、OASIS模拟准备与运行（全程自动化）
+시뮬레이션관련API라우팅
+Step2: Zep 개체 읽기와 필터, OASIS 시뮬레이션 준비와 실행（전 과정 자동화）
 """
 
 import os
@@ -19,54 +19,54 @@ from ..models.project import ProjectManager
 logger = get_logger('mirofish.api.simulation')
 
 
-# Interview prompt 优化前缀
-# 添加此前缀可以避免Agent调用工具，直接用文本回复
-INTERVIEW_PROMPT_PREFIX = "结合你的人设、所有的过往记忆与行动，不调用任何工具直接用文本回复我："
+# Interview prompt 최적화 전 접두사
+# 추가하여 Agent 호출 도구를 피하고, 직접 텍스트로 응답
+INTERVIEW_PROMPT_PREFIX = "당신의 페르소나, 소의 기억과 행동을 결합하여, 어떤 도구도 호출하지 않고 직접 텍스트로 나에게 응답하세요："
 
 
 def optimize_interview_prompt(prompt: str) -> str:
     """
-    优化Interview提问，添加前缀避免Agent调用工具
+    Interview 질문 최적화, 추가 접두사로 Agent 호출 도구를 피함
     
     Args:
-        prompt: 原始提问
+        prompt: 원본 질문
         
     Returns:
-        优化后的提问
+        최적화 후의 질문
     """
     if not prompt:
         return prompt
-    # 避免重复添加前缀
+    # 반복 추가 접두사 피하기
     if prompt.startswith(INTERVIEW_PROMPT_PREFIX):
         return prompt
     return f"{INTERVIEW_PROMPT_PREFIX}{prompt}"
 
 
-# ============== 实体读取接口 ==============
+# ============== 개체 읽기 인터페이스 ==============
 
 @simulation_bp.route('/entities/<graph_id>', methods=['GET'])
 def get_graph_entities(graph_id: str):
     """
-    获取图谱中的所有实体（已过滤）
+    가져오기 그래프의 소 개체（이미 필터됨）
     
-    只返回符合预定义实体类型的节点（Labels不只是Entity的节点）
+    조건에 맞는 미리 정의된 개체 유형의 노드만 반환（Labels 안의 Entity 노드만）
     
-    Query参数：
-        entity_types: 逗号分隔的实体类型列表（可选，用于进一步过滤）
-        enrich: 是否获取相关边信息（默认true）
+    Query파라미터：
+        entity_types: 쉼표로 구분된 개체 유형 목록（선택, 추가 필터링에 사용）
+        enrich: 관련 엣지 정보를 가져올지 여부（기본값 true）
     """
     try:
         if not Config.ZEP_API_KEY:
             return jsonify({
                 "success": False,
-                "error": "ZEP_API_KEY未配置"
+                "error": "ZEP_API_KEY미설정"
             }), 500
         
         entity_types_str = request.args.get('entity_types', '')
         entity_types = [t.strip() for t in entity_types_str.split(',') if t.strip()] if entity_types_str else None
         enrich = request.args.get('enrich', 'true').lower() == 'true'
         
-        logger.info(f"获取图谱实体: graph_id={graph_id}, entity_types={entity_types}, enrich={enrich}")
+        logger.info(f"가져오기그래프개체: graph_id={graph_id}, entity_types={entity_types}, enrich={enrich}")
         
         reader = ZepEntityReader()
         result = reader.filter_defined_entities(
@@ -81,7 +81,7 @@ def get_graph_entities(graph_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取图谱实体失败: {str(e)}")
+        logger.error(f"가져오기그래프개체실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -91,12 +91,12 @@ def get_graph_entities(graph_id: str):
 
 @simulation_bp.route('/entities/<graph_id>/<entity_uuid>', methods=['GET'])
 def get_entity_detail(graph_id: str, entity_uuid: str):
-    """获取单个实体的详细信息"""
+    """단일 개체의 상세 정보를 가져오기"""
     try:
         if not Config.ZEP_API_KEY:
             return jsonify({
                 "success": False,
-                "error": "ZEP_API_KEY未配置"
+                "error": "ZEP_API_KEY미설정"
             }), 500
         
         reader = ZepEntityReader()
@@ -105,7 +105,7 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
         if not entity:
             return jsonify({
                 "success": False,
-                "error": f"实体不存在: {entity_uuid}"
+                "error": f"개체존재하지 않음: {entity_uuid}"
             }), 404
         
         return jsonify({
@@ -114,7 +114,7 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
         })
         
     except Exception as e:
-        logger.error(f"获取实体详情失败: {str(e)}")
+        logger.error(f"가져오기개체상세실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -124,12 +124,12 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
 
 @simulation_bp.route('/entities/<graph_id>/by-type/<entity_type>', methods=['GET'])
 def get_entities_by_type(graph_id: str, entity_type: str):
-    """获取指定类型的所有实体"""
+    """지정된 유형의 소 개체를 가져오기"""
     try:
         if not Config.ZEP_API_KEY:
             return jsonify({
                 "success": False,
-                "error": "ZEP_API_KEY未配置"
+                "error": "ZEP_API_KEY미설정"
             }), 500
         
         enrich = request.args.get('enrich', 'true').lower() == 'true'
@@ -151,7 +151,7 @@ def get_entities_by_type(graph_id: str, entity_type: str):
         })
         
     except Exception as e:
-        logger.error(f"获取实体失败: {str(e)}")
+        logger.error(f"가져오기개체실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -159,24 +159,24 @@ def get_entities_by_type(graph_id: str, entity_type: str):
         }), 500
 
 
-# ============== 模拟管理接口 ==============
+# ============== 시뮬레이션관리인터페이스 ==============
 
 @simulation_bp.route('/create', methods=['POST'])
 def create_simulation():
     """
-    创建新的模拟
+    새로운 시뮬레이션 생성
     
-    注意：max_rounds等参数由LLM智能生成，无需手动设置
+    주의: max_rounds 등의 파라미터는 LLM 지능형 생성에 의해 자동 설정되며, 수동으로 설정할 필요 없음
     
-    请求（JSON）：
+    요청（JSON）：
         {
-            "project_id": "proj_xxxx",      // 必填
-            "graph_id": "mirofish_xxxx",    // 可选，如不提供则从project获取
-            "enable_twitter": true,          // 可选，默认true
-            "enable_reddit": true            // 可选，默认true
+            "project_id": "proj_xxxx",      // 필수
+            "graph_id": "mirofish_xxxx",    // 선택 사항, 제공되지 않으면 프로젝트에서 가져오기
+            "enable_twitter": true,          // 선택, 기본값true
+            "enable_reddit": true            // 선택, 기본값true
         }
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -197,21 +197,21 @@ def create_simulation():
         if not project_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 project_id"
+                "error": "프로젝트 ID를 제공해 주세요"
             }), 400
         
         project = ProjectManager.get_project(project_id)
         if not project:
             return jsonify({
                 "success": False,
-                "error": f"项目不存在: {project_id}"
+                "error": f"프로젝트존재하지 않음: {project_id}"
             }), 404
         
         graph_id = data.get('graph_id') or project.graph_id
         if not graph_id:
             return jsonify({
                 "success": False,
-                "error": "项目尚未构建图谱，请先调用 /api/graph/build"
+                "error": "프로젝트가 아직 그래프를 구축하지 않았습니다, 먼저 /api/graph/build를 호출하세요"
             }), 400
         
         manager = SimulationManager()
@@ -228,7 +228,7 @@ def create_simulation():
         })
         
     except Exception as e:
-        logger.error(f"创建模拟失败: {str(e)}")
+        logger.error(f"생성시뮬레이션실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -238,16 +238,16 @@ def create_simulation():
 
 def _check_simulation_prepared(simulation_id: str) -> tuple:
     """
-    检查模拟是否已经准备完成
+    시뮬레이션이 이미 준비 완료인지 확인
     
-    检查条件：
-    1. state.json 存在且 status 为 "ready"
-    2. 必要文件存在：reddit_profiles.json, twitter_profiles.csv, simulation_config.json
+    확인할 항목:
+    1. state.json이 저장되어 있고 상태가 "ready"
+    2. 필수 파일이 저장되어 있음: reddit_profiles.json, twitter_profiles.csv, simulation_config.json
     
-    注意：运行脚本(run_*.py)保留在 backend/scripts/ 目录，不再复制到模拟目录
+    주의: 실행 스크립트(run_*.py)는 backend/scripts/ 디렉토리에 보관하고, 시뮬레이션 디렉토리에 복사하지 마세요
     
     Args:
-        simulation_id: 模拟ID
+        simulation_id: 시뮬레이션ID
         
     Returns:
         (is_prepared: bool, info: dict)
@@ -257,11 +257,11 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
     
     simulation_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
     
-    # 检查目录是否存在
+    # 디렉토리에 파일이 저장되어 있는지 확인
     if not os.path.exists(simulation_dir):
-        return False, {"reason": "模拟目录不存在"}
+        return False, {"reason": "시뮬레이션디렉토리존재하지 않음"}
     
-    # 必要文件列表（不包括脚本，脚本位于 backend/scripts/）
+    # 필수 파일 목록（스크립트는 포함하지 않음, 스크립트는 backend/scripts/에 위치）
     required_files = [
         "state.json",
         "simulation_config.json",
@@ -269,7 +269,7 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
         "twitter_profiles.csv"
     ]
     
-    # 检查文件是否存在
+    # 파일이 저장되어 있는지 확인
     existing_files = []
     missing_files = []
     for f in required_files:
@@ -281,12 +281,12 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
     
     if missing_files:
         return False, {
-            "reason": "缺少必要文件",
+            "reason": "필수 파일이 누락됨",
             "missing_files": missing_files,
             "existing_files": existing_files
         }
     
-    # 检查state.json中的状态
+    # state.json의 상태 확인
     state_file = os.path.join(simulation_dir, "state.json")
     try:
         import json
@@ -296,20 +296,20 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
         status = state_data.get("status", "")
         config_generated = state_data.get("config_generated", False)
         
-        # 详细日志
-        logger.debug(f"检测模拟准备状态: {simulation_id}, status={status}, config_generated={config_generated}")
+        # 상세 로그
+        logger.debug(f"감지시뮬레이션준비상태: {simulation_id}, status={status}, config_generated={config_generated}")
         
-        # 如果 config_generated=True 且文件存在，认为准备完成
-        # 以下状态都说明准备工作已完成：
-        # - ready: 准备完成，可以运行
-        # - preparing: 如果 config_generated=True 说明已完成
-        # - running: 正在运行，说明准备早就完成了
-        # - completed: 运行完成，说明准备早就完成了
-        # - stopped: 已停止，说明准备早就完成了
-        # - failed: 运行失败（但准备是完成的）
+        # 만약 config_generated=True 이고 파일이 저장되어 있다면, 준비 완료로 인식
+        # 따라서 아래 상태는 모두 준비 작업 완료를 의미:
+        # - ready: 준비 완료, 하여실행
+        # - preparing: 만약 config_generated=True 이면 완료
+        # - running: 진행 중: 실행 중, 준비가 이미 완료됨을 의미
+        # - completed: 실행 완료, 준비가 이미 완료됨을 의미
+        # - stopped: 이미 중지됨, 준비가 이미 완료됨을 의미
+        # - failed: 실행 실패（하지만 준비는 완료됨）
         prepared_statuses = ["ready", "preparing", "running", "completed", "stopped", "failed"]
         if status in prepared_statuses and config_generated:
-            # 获取文件统计信息
+            # 가져오기파일통계정보
             profiles_file = os.path.join(simulation_dir, "reddit_profiles.json")
             config_file = os.path.join(simulation_dir, "simulation_config.json")
             
@@ -319,7 +319,7 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
                     profiles_data = json.load(f)
                     profiles_count = len(profiles_data) if isinstance(profiles_data, list) else 0
             
-            # 如果状态是preparing但文件已完成，自动更新状态为ready
+            # 만약 상태가 preparing 이지만 파일이 완료되었다면, 자동으로 상태를 ready로 업데이트
             if status == "preparing":
                 try:
                     state_data["status"] = "ready"
@@ -327,12 +327,12 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
                     state_data["updated_at"] = datetime.now().isoformat()
                     with open(state_file, 'w', encoding='utf-8') as f:
                         json.dump(state_data, f, ensure_ascii=False, indent=2)
-                    logger.info(f"自动更新模拟状态: {simulation_id} preparing -> ready")
+                    logger.info(f"자동업데이트시뮬레이션상태: {simulation_id} preparing -> ready")
                     status = "ready"
                 except Exception as e:
-                    logger.warning(f"自动更新状态失败: {e}")
+                    logger.warning(f"자동업데이트상태실패: {e}")
             
-            logger.info(f"模拟 {simulation_id} 检测结果: 已准备完成 (status={status}, config_generated={config_generated})")
+            logger.info(f"시뮬레이션 {simulation_id} 감지결과: 이미준비 완료 (status={status}, config_generated={config_generated})")
             return True, {
                 "status": status,
                 "entities_count": state_data.get("entities_count", 0),
@@ -344,55 +344,55 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
                 "existing_files": existing_files
             }
         else:
-            logger.warning(f"模拟 {simulation_id} 检测结果: 未准备完成 (status={status}, config_generated={config_generated})")
+            logger.warning(f"시뮬레이션 {simulation_id} 감지 결과: 준비 완료되지 않음 (status={status}, config_generated={config_generated})")
             return False, {
-                "reason": f"状态不在已准备列表中或config_generated为false: status={status}, config_generated={config_generated}",
+                "reason": f"상태안에서이미준비목록중또는config_generated로false: status={status}, config_generated={config_generated}",
                 "status": status,
                 "config_generated": config_generated
             }
             
     except Exception as e:
-        return False, {"reason": f"读取状态文件失败: {str(e)}"}
+        return False, {"reason": f"상태 파일 읽기 실패: {str(e)}"}
 
 
 @simulation_bp.route('/prepare', methods=['POST'])
 def prepare_simulation():
     """
-    准备模拟环境（异步任务，LLM智能生成所有参数）
+    준비 시뮬레이션 환경(비동기 작업, LLM 지능형 생성 소 파라미터)
     
-    这是一个耗时操作，接口会立即返回task_id，
-    使用 GET /api/simulation/prepare/status 查询进度
+    이 작업은 시간이 소요되며, 인터페이스는 즉시 task_id로 돌아갑니다.
+    사용 GET /api/simulation/prepare/status 조회진행률
     
-    特性：
-    - 自动检测已完成的准备工作，避免重复生成
-    - 如果已准备完成，直接返回已有结果
-    - 支持强制重新生成（force_regenerate=true）
+    특성：
+    - 자동 감지 완료의 준비 작업, 반복 생성을 피합니다.
+    - 만약 이미 준비 완료라면, 직접 돌아가서 이미 결과를 반환합니다.
+    - 강제로 재생성을 지원합니다 (force_regenerate=true).
     
-    步骤：
-    1. 检查是否已有完成的准备工作
-    2. 从Zep图谱读取并过滤实体
-    3. 为每个实体生成OASIS Agent Profile（带重试机制）
-    4. LLM智能生成模拟配置（带重试机制）
-    5. 保存配置文件和预设脚本
+    단계:
+    1. 이미 완료된 준비 작업인지 확인합니다.
+    2. 부터Zep그래프읽고필터개체
+    3. 각 개체에 대해 OASIS Agent Profile을 생성합니다 (재시도 메커니즘 포함).
+    4. LLM지능형생성시뮬레이션설정（포함재시도메커니즘）
+    5. 저장설정파일와프리셋 스크립트
     
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",                   // 必填，模拟ID
-            "entity_types": ["Student", "PublicFigure"],  // 可选，指定实体类型
-            "use_llm_for_profiles": true,                 // 可选，是否用LLM生成人设
-            "parallel_profile_count": 5,                  // 可选，并行生成人设数量，默认5
-            "force_regenerate": false                     // 可选，强制重新生成，默认false
+            "simulation_id": "sim_xxxx",                   // 필수, 시뮬레이션ID
+            "entity_types": ["Student", "PublicFigure"],  // 선택, 지정 개체 유형
+            "use_llm_for_profiles": true,                 // 선택, LLM을 사용하여 페르소나 생성
+            "parallel_profile_count": 5,                  // 선택, 병렬생성페르소나수량, 기본값5
+            "force_regenerate": false                     // 선택, 강제로 재생성, 기본값 false
         }
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
                 "simulation_id": "sim_xxxx",
-                "task_id": "task_xxxx",           // 新任务时返回
+                "task_id": "task_xxxx",           // 새 작업 시 돌아가기
                 "status": "preparing|ready",
-                "message": "准备任务已启动|已有完成的准备工作",
-                "already_prepared": true|false    // 是否已准备完成
+                "message": "준비 작업이 시작되었습니다|이미 완료된 준비 작업",
+                "already_prepared": true|false    // 이미 준비 완료인지 여부
             }
         }
     """
@@ -408,7 +408,7 @@ def prepare_simulation():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "시뮬레이션 ID를 제공해 주세요"
             }), 400
         
         manager = SimulationManager()
@@ -417,76 +417,76 @@ def prepare_simulation():
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": f"시뮬레이션존재하지 않음: {simulation_id}"
             }), 404
         
-        # 检查是否强制重新生成
+        # 강제로 재생성 여부 확인
         force_regenerate = data.get('force_regenerate', False)
-        logger.info(f"开始处理 /prepare 请求: simulation_id={simulation_id}, force_regenerate={force_regenerate}")
+        logger.info(f"시작처리 /prepare 요청: simulation_id={simulation_id}, force_regenerate={force_regenerate}")
         
-        # 检查是否已经准备完成（避免重复生成）
+        # 이미 준비 완료인지 확인 (반복 생성을 피하기 위해)
         if not force_regenerate:
-            logger.debug(f"检查模拟 {simulation_id} 是否已准备完成...")
+            logger.debug(f"시뮬레이션 {simulation_id} 이미 준비 완료인지 확인 중...")
             is_prepared, prepare_info = _check_simulation_prepared(simulation_id)
-            logger.debug(f"检查结果: is_prepared={is_prepared}, prepare_info={prepare_info}")
+            logger.debug(f"확인 결과: is_prepared={is_prepared}, prepare_info={prepare_info}")
             if is_prepared:
-                logger.info(f"模拟 {simulation_id} 已准备完成，跳过重复生成")
+                logger.info(f"시뮬레이션 {simulation_id} 이미 준비 완료, 반복 생성을 건너뜁니다.")
                 return jsonify({
                     "success": True,
                     "data": {
                         "simulation_id": simulation_id,
                         "status": "ready",
-                        "message": "已有完成的准备工作，无需重复生成",
+                        "message": "이미 완료된 준비 작업, 반복 생성을 할 필요가 없습니다.",
                         "already_prepared": True,
                         "prepare_info": prepare_info
                     }
                 })
             else:
-                logger.info(f"模拟 {simulation_id} 未准备完成，将启动准备任务")
+                logger.info(f"시뮬레이션 {simulation_id} 준비 완료되지 않음, 준비 작업 시작합니다.")
         
-        # 从项目获取必要信息
+        # 프로젝트에서 가져오기 필수 정보
         project = ProjectManager.get_project(state.project_id)
         if not project:
             return jsonify({
                 "success": False,
-                "error": f"项目不存在: {state.project_id}"
+                "error": f"프로젝트존재하지 않음: {state.project_id}"
             }), 404
         
-        # 获取模拟需求
+        # 가져오기시뮬레이션 요구사항
         simulation_requirement = project.simulation_requirement or ""
         if not simulation_requirement:
             return jsonify({
                 "success": False,
-                "error": "项目缺少模拟需求描述 (simulation_requirement)"
+                "error": "프로젝트에 시뮬레이션 요구 사항 설명이 부족합니다 (simulation_requirement)"
             }), 400
         
-        # 获取文档文本
+        # 가져오기문서텍스트
         document_text = ProjectManager.get_extracted_text(state.project_id) or ""
         
         entity_types_list = data.get('entity_types')
         use_llm_for_profiles = data.get('use_llm_for_profiles', True)
         parallel_profile_count = data.get('parallel_profile_count', 5)
         
-        # ========== 同步获取实体数量（在后台任务启动前） ==========
-        # 这样前端在调用prepare后立即就能获取到预期Agent总数
+        # ========== 동기 가져오기 개체 수량 (백그라운드에서 작업 시작 전) ==========
+        # 이렇게 하면 프론트엔드에서 호출 시 prepare 즉시 예상 Agent 총 수를 가져옵니다.
         try:
-            logger.info(f"同步获取实体数量: graph_id={state.graph_id}")
+            logger.info(f"동기 가져오기 개체 수량: graph_id={state.graph_id}")
             reader = ZepEntityReader()
-            # 快速读取实体（不需要边信息，只统计数量）
+            # 빠르게 개체를 읽기 (엣지 정보는 필요 없으며, 수량만 통계)
             filtered_preview = reader.filter_defined_entities(
                 graph_id=state.graph_id,
                 defined_entity_types=entity_types_list,
-                enrich_with_edges=False  # 不获取边信息，加快速度
+                enrich_with_edges=False  # 엣지 정보를 가져오지 않음, 속도 향상
             )
-            # 保存实体数量到状态（供前端立即获取）
+            # 개체 수량 상태 저장 (프론트엔드에서 즉시 가져오기 위해)
             state.entities_count = filtered_preview.filtered_count
             state.entity_types = list(filtered_preview.entity_types)
-            logger.info(f"预期实体数量: {filtered_preview.filtered_count}, 类型: {filtered_preview.entity_types}")
+            logger.info(f"예상 개체 수량: {filtered_preview.filtered_count}, 유형: {filtered_preview.entity_types}")
         except Exception as e:
-            logger.warning(f"同步获取实体数量失败（将在后台任务中重试）: {e}")
-            # 失败不影响后续流程，后台任务会重新获取
+            logger.warning(f"동기 가져오기 개체 수량 실패 (백그라운드에서 작업 중 재시도): {e}")
+            # 실패는 후속 프로세스에 영향을 미치지 않으며, 백그라운드 작업을 다시 가져옵니다.
         
-        # 创建异步任务
+        # 생성비동기작업
         task_manager = TaskManager()
         task_id = task_manager.create_task(
             task_type="simulation_prepare",
@@ -496,26 +496,26 @@ def prepare_simulation():
             }
         )
         
-        # 更新模拟状态（包含预先获取的实体数量）
+        # 시뮬레이션 상태 업데이트 (예상 가져오기 개체 수량 포함)
         state.status = SimulationStatus.PREPARING
         manager._save_simulation_state(state)
         
-        # 定义后台任务
+        # 백그라운드 작업 정의
         def run_prepare():
             try:
                 task_manager.update_task(
                     task_id,
                     status=TaskStatus.PROCESSING,
                     progress=0,
-                    message="开始准备模拟环境..."
+                    message="시작준비시뮬레이션환경..."
                 )
                 
-                # 准备模拟（带进度回调）
-                # 存储阶段进度详情
+                # 준비 시뮬레이션 (진행률 콜백 포함)
+                # 단계 진행률 세부 정보 저장
                 stage_details = {}
                 
                 def progress_callback(stage, progress, message, **kwargs):
-                    # 计算总进度
+                    # 총 진행률 계산
                     stage_weights = {
                         "reading": (0, 20),           # 0-20%
                         "generating_profiles": (20, 70),  # 20-70%
@@ -526,18 +526,18 @@ def prepare_simulation():
                     start, end = stage_weights.get(stage, (0, 100))
                     current_progress = int(start + (end - start) * progress / 100)
                     
-                    # 构建详细进度信息
+                    # 상세 진행률 정보 구축
                     stage_names = {
-                        "reading": "读取图谱实体",
-                        "generating_profiles": "生成Agent人设",
-                        "generating_config": "生成模拟配置",
-                        "copying_scripts": "准备模拟脚本"
+                        "reading": "그래프 개체 읽기",
+                        "generating_profiles": "생성Agent페르소나",
+                        "generating_config": "생성시뮬레이션설정",
+                        "copying_scripts": "시뮬레이션 스크립트 준비"
                     }
                     
                     stage_index = list(stage_weights.keys()).index(stage) + 1 if stage in stage_weights else 1
                     total_stages = len(stage_weights)
                     
-                    # 更新阶段详情
+                    # 업데이트 단계 상세
                     stage_details[stage] = {
                         "stage_name": stage_names.get(stage, stage),
                         "stage_progress": progress,
@@ -546,7 +546,7 @@ def prepare_simulation():
                         "item_name": kwargs.get("item_name", "")
                     }
                     
-                    # 构建详细进度信息
+                    # 구축 상세 진행률 정보
                     detail = stage_details[stage]
                     progress_detail_data = {
                         "current_stage": stage,
@@ -559,7 +559,7 @@ def prepare_simulation():
                         "item_description": message
                     }
                     
-                    # 构建简洁消息
+                    # 구축 간결 메시지
                     if detail["total"] > 0:
                         detailed_message = (
                             f"[{stage_index}/{total_stages}] {stage_names.get(stage, stage)}: "
@@ -585,24 +585,24 @@ def prepare_simulation():
                     parallel_profile_count=parallel_profile_count
                 )
                 
-                # 任务完成
+                # 작업완료
                 task_manager.complete_task(
                     task_id,
                     result=result_state.to_simple_dict()
                 )
                 
             except Exception as e:
-                logger.error(f"准备模拟失败: {str(e)}")
+                logger.error(f"준비시뮬레이션실패: {str(e)}")
                 task_manager.fail_task(task_id, str(e))
                 
-                # 更新模拟状态为失败
+                # 업데이트시뮬레이션상태로실패
                 state = manager.get_simulation(simulation_id)
                 if state:
                     state.status = SimulationStatus.FAILED
                     state.error = str(e)
                     manager._save_simulation_state(state)
         
-        # 启动后台线程
+        # 시작 후 대기 스레드
         thread = threading.Thread(target=run_prepare, daemon=True)
         thread.start()
         
@@ -612,10 +612,10 @@ def prepare_simulation():
                 "simulation_id": simulation_id,
                 "task_id": task_id,
                 "status": "preparing",
-                "message": "准备任务已启动，请通过 /api/simulation/prepare/status 查询进度",
+                "message": "준비 작업이 시작되었습니다, /api/simulation/prepare/status 조회 진행률을 확인하세요",
                 "already_prepared": False,
-                "expected_entities_count": state.entities_count,  # 预期的Agent总数
-                "entity_types": state.entity_types  # 实体类型列表
+                "expected_entities_count": state.entities_count,  # 예상 Agent 총 수
+                "entity_types": state.entity_types  # 개체 유형목록
             }
         })
         
@@ -626,7 +626,7 @@ def prepare_simulation():
         }), 404
         
     except Exception as e:
-        logger.error(f"启动准备任务失败: {str(e)}")
+        logger.error(f"시작준비작업실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -637,19 +637,19 @@ def prepare_simulation():
 @simulation_bp.route('/prepare/status', methods=['POST'])
 def get_prepare_status():
     """
-    查询准备任务进度
+    조회준비작업진행률
     
-    支持两种查询方式：
-    1. 通过task_id查询正在进行的任务进度
-    2. 通过simulation_id检查是否已有完成的准备工作
+    두 가지 조회 방식 지원:
+    1. task_id로 진행 중 조회: 작업 진행률 확인
+    2. simulation_id로 준비 작업이 완료되었는지 확인
     
-    请求（JSON）：
+    요청（JSON）：
         {
-            "task_id": "task_xxxx",          // 可选，prepare返回的task_id
-            "simulation_id": "sim_xxxx"      // 可选，模拟ID（用于检查已完成的准备）
+            "task_id": "task_xxxx",          // 선택, prepare돌아가기의task_id
+            "simulation_id": "sim_xxxx"      // 선택, 시뮬레이션 ID (완료된 준비 확인용)
         }
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -657,8 +657,8 @@ def get_prepare_status():
                 "status": "processing|completed|ready",
                 "progress": 45,
                 "message": "...",
-                "already_prepared": true|false,  // 是否已有完成的准备
-                "prepare_info": {...}            // 已准备完成时的详细信息
+                "already_prepared": true|false,  // 이미 완료된 준비 여부
+                "prepare_info": {...}            // 이미 준비 완료 시의 상세 정보
             }
         }
     """
@@ -670,7 +670,7 @@ def get_prepare_status():
         task_id = data.get('task_id')
         simulation_id = data.get('simulation_id')
         
-        # 如果提供了simulation_id，先检查是否已准备完成
+        # 만약 simulation_id를 제공하면, 먼저 준비 완료 여부 확인
         if simulation_id:
             is_prepared, prepare_info = _check_simulation_prepared(simulation_id)
             if is_prepared:
@@ -680,36 +680,36 @@ def get_prepare_status():
                         "simulation_id": simulation_id,
                         "status": "ready",
                         "progress": 100,
-                        "message": "已有完成的准备工作",
+                        "message": "이미 완료된 준비 작업입니다",
                         "already_prepared": True,
                         "prepare_info": prepare_info
                     }
                 })
         
-        # 如果没有task_id，返回错误
+        # 만약없으면task_id, 돌아가기오류
         if not task_id:
             if simulation_id:
-                # 有simulation_id但未准备完成
+                # simulation_id가 있지만 준비가 완료되지 않음
                 return jsonify({
                     "success": True,
                     "data": {
                         "simulation_id": simulation_id,
                         "status": "not_started",
                         "progress": 0,
-                        "message": "尚未开始准备，请调用 /api/simulation/prepare 开始",
+                        "message": "아직 준비가 시작되지 않았습니다, /api/simulation/prepare 호출하여 시작하세요",
                         "already_prepared": False
                     }
                 })
             return jsonify({
                 "success": False,
-                "error": "请提供 task_id 或 simulation_id"
+                "error": "task_id 또는 simulation_id를 제공해 주세요"
             }), 400
         
         task_manager = TaskManager()
         task = task_manager.get_task(task_id)
         
         if not task:
-            # 任务不存在，但如果有simulation_id，检查是否已准备完成
+            # 작업이 존재하지 않지만, simulation_id가 있다면 준비 완료 여부 확인
             if simulation_id:
                 is_prepared, prepare_info = _check_simulation_prepared(simulation_id)
                 if is_prepared:
@@ -720,7 +720,7 @@ def get_prepare_status():
                             "task_id": task_id,
                             "status": "ready",
                             "progress": 100,
-                            "message": "任务已完成（准备工作已存在）",
+                            "message": "작업 완료 (준비 작업이 이미 존재함)",
                             "already_prepared": True,
                             "prepare_info": prepare_info
                         }
@@ -728,7 +728,7 @@ def get_prepare_status():
             
             return jsonify({
                 "success": False,
-                "error": f"任务不存在: {task_id}"
+                "error": f"작업존재하지 않음: {task_id}"
             }), 404
         
         task_dict = task.to_dict()
@@ -740,7 +740,7 @@ def get_prepare_status():
         })
         
     except Exception as e:
-        logger.error(f"查询任务状态失败: {str(e)}")
+        logger.error(f"조회작업상태실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -749,7 +749,7 @@ def get_prepare_status():
 
 @simulation_bp.route('/<simulation_id>', methods=['GET'])
 def get_simulation(simulation_id: str):
-    """获取模拟状态"""
+    """가져오기시뮬레이션상태"""
     try:
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
@@ -757,12 +757,12 @@ def get_simulation(simulation_id: str):
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": f"시뮬레이션존재하지 않음: {simulation_id}"
             }), 404
         
         result = state.to_dict()
         
-        # 如果模拟已准备好，附加运行说明
+        # 만약 시뮬레이션이 이미 준비되었다면, 실행 설명 추가
         if state.status == SimulationStatus.READY:
             result["run_instructions"] = manager.get_run_instructions(simulation_id)
         
@@ -772,7 +772,7 @@ def get_simulation(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取模拟状态失败: {str(e)}")
+        logger.error(f"가져오기시뮬레이션상태실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -783,10 +783,10 @@ def get_simulation(simulation_id: str):
 @simulation_bp.route('/list', methods=['GET'])
 def list_simulations():
     """
-    列出所有模拟
+    시뮬레이션 목록 나열
     
-    Query参数：
-        project_id: 按项目ID过滤（可选）
+    Query파라미터：
+        project_id: 프로젝트 ID로 필터링 (선택)
     """
     try:
         project_id = request.args.get('project_id')
@@ -801,7 +801,7 @@ def list_simulations():
         })
         
     except Exception as e:
-        logger.error(f"列出模拟失败: {str(e)}")
+        logger.error(f"시뮬레이션 나열 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -811,22 +811,22 @@ def list_simulations():
 
 def _get_report_id_for_simulation(simulation_id: str) -> str:
     """
-    获取 simulation 对应的最新 report_id
+    최신 report_id를 가져오기 위해 simulation 응답
     
-    遍历 reports 目录，找出 simulation_id 匹配的 report，
-    如果有多个则返回最新的（按 created_at 排序）
+    reports 디렉토리를 탐색하여 simulation_id와 일치하는 report를 찾습니다,
+    만약 여러 개라면 최신의 것을 반환합니다 (created_at 기준 정렬)
     
     Args:
-        simulation_id: 模拟ID
+        simulation_id: 시뮬레이션ID
         
     Returns:
-        report_id 或 None
+        report_id 또는 None
     """
     import json
     from datetime import datetime
     
-    # reports 目录路径：backend/uploads/reports
-    # __file__ 是 app/api/simulation.py，需要向上两级到 backend/
+    # reports 디렉토리경로：backend/uploads/reports
+    # __file__  app/api/simulation.py, 두 단계 위로 backend/
     reports_dir = os.path.join(os.path.dirname(__file__), '../../uploads/reports')
     if not os.path.exists(reports_dir):
         return None
@@ -859,34 +859,34 @@ def _get_report_id_for_simulation(simulation_id: str) -> str:
         if not matching_reports:
             return None
         
-        # 按创建时间倒序排序，返回最新的
+        # 생성 시간 기준 내림차순 정렬, 최신의 것을 반환
         matching_reports.sort(key=lambda x: x.get("created_at", ""), reverse=True)
         return matching_reports[0].get("report_id")
         
     except Exception as e:
-        logger.warning(f"查找 simulation {simulation_id} 的 report 失败: {e}")
+        logger.warning(f"simulation {simulation_id}의 report 찾기 실패: {e}")
         return None
 
 
 @simulation_bp.route('/history', methods=['GET'])
 def get_simulation_history():
     """
-    获取历史模拟列表（带项目详情）
+    역사 시뮬레이션 목록 가져오기 (프로젝트 상세 포함)
     
-    用于首页历史项目展示，返回包含项目名称、描述等丰富信息的模拟列表
+    홈페이지 역사 프로젝트 표시를 위해, 프로젝트 이름, 설명 등 풍부한 정보의 시뮬레이션 목록 반환
     
-    Query参数：
-        limit: 返回数量限制（默认20）
+    Query파라미터：
+        limit: 반환할 수량 제한 (기본값 20)
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": [
                 {
                     "simulation_id": "sim_xxxx",
                     "project_id": "proj_xxxx",
-                    "project_name": "武大舆情分析",
-                    "simulation_requirement": "如果武汉大学发布...",
+                    "project_name": "무한대 여론 분석",
+                    "simulation_requirement": "만약 우한대학교가 발표한다면...",
                     "status": "completed",
                     "entities_count": 68,
                     "profiles_count": 68,
@@ -909,18 +909,18 @@ def get_simulation_history():
         manager = SimulationManager()
         simulations = manager.list_simulations()[:limit]
         
-        # 增强模拟数据，只从 Simulation 文件读取
+        # 시뮬레이션 데이터를 강화하기 위해, Simulation 파일에서 읽기 시작
         enriched_simulations = []
         for sim in simulations:
             sim_dict = sim.to_dict()
             
-            # 获取模拟配置信息（从 simulation_config.json 读取 simulation_requirement）
+            # 시뮬레이션 설정 정보를 가져오기 위해 (simulation_config.json에서 simulation_requirement 읽기)
             config = manager.get_simulation_config(sim.simulation_id)
             if config:
                 sim_dict["simulation_requirement"] = config.get("simulation_requirement", "")
                 time_config = config.get("time_config", {})
                 sim_dict["total_simulation_hours"] = time_config.get("total_simulation_hours", 0)
-                # 推荐轮数（后备值）
+                # 추천 라운드 수 (후备 값)
                 recommended_rounds = int(
                     time_config.get("total_simulation_hours", 0) * 60 / 
                     max(time_config.get("minutes_per_round", 60), 1)
@@ -930,35 +930,35 @@ def get_simulation_history():
                 sim_dict["total_simulation_hours"] = 0
                 recommended_rounds = 0
             
-            # 获取运行状态（从 run_state.json 读取用户设置的实际轮数）
+            # 실행 상태 가져오기 (run_state.json에서 사용자 설정의 실제 라운드 수 읽기)
             run_state = SimulationRunner.get_run_state(sim.simulation_id)
             if run_state:
                 sim_dict["current_round"] = run_state.current_round
                 sim_dict["runner_status"] = run_state.runner_status.value
-                # 使用用户设置的 total_rounds，若无则使用推荐轮数
+                # 사용자 설정의 total_rounds, 없으면 추천 라운드 수 사용
                 sim_dict["total_rounds"] = run_state.total_rounds if run_state.total_rounds > 0 else recommended_rounds
             else:
                 sim_dict["current_round"] = 0
                 sim_dict["runner_status"] = "idle"
                 sim_dict["total_rounds"] = recommended_rounds
             
-            # 获取关联项目的文件列表（最多3个）
+            # 가져오기 연관 프로젝트의 파일 목록（최대 3개）
             project = ProjectManager.get_project(sim.project_id)
             if project and hasattr(project, 'files') and project.files:
                 sim_dict["files"] = [
-                    {"filename": f.get("filename", "未知文件")} 
+                    {"filename": f.get("filename", "알 수 없음파일")} 
                     for f in project.files[:3]
                 ]
             else:
                 sim_dict["files"] = []
             
-            # 获取关联的 report_id（查找该 simulation 最新的 report）
+            # 가져오기 연관의 report_id（해당 시뮬레이션 최신의 report 찾기）
             sim_dict["report_id"] = _get_report_id_for_simulation(sim.simulation_id)
             
-            # 添加版本号
+            # 추가 버전 번호
             sim_dict["version"] = "v1.0.2"
             
-            # 格式化日期
+            # 형식화날짜
             try:
                 created_date = sim_dict.get("created_at", "")[:10]
                 sim_dict["created_date"] = created_date
@@ -974,7 +974,7 @@ def get_simulation_history():
         })
         
     except Exception as e:
-        logger.error(f"获取历史模拟失败: {str(e)}")
+        logger.error(f"가져오기 역사 시뮬레이션 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -985,10 +985,10 @@ def get_simulation_history():
 @simulation_bp.route('/<simulation_id>/profiles', methods=['GET'])
 def get_simulation_profiles(simulation_id: str):
     """
-    获取模拟的Agent Profile
+    가져오기시뮬레이션의Agent Profile
     
-    Query参数：
-        platform: 平台类型（reddit/twitter，默认reddit）
+    Query파라미터：
+        platform: 플랫폼유형（reddit/twitter, 기본값reddit）
     """
     try:
         platform = request.args.get('platform', 'reddit')
@@ -1012,7 +1012,7 @@ def get_simulation_profiles(simulation_id: str):
         }), 404
         
     except Exception as e:
-        logger.error(f"获取Profile失败: {str(e)}")
+        logger.error(f"가져오기Profile실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1023,25 +1023,25 @@ def get_simulation_profiles(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/profiles/realtime', methods=['GET'])
 def get_simulation_profiles_realtime(simulation_id: str):
     """
-    实时获取模拟的Agent Profile（用于在生成过程中实时查看进度）
+    실시간 가져오기 시뮬레이션의 Agent Profile（용에서 생성 중 실시간 진행률 보기）
     
-    与 /profiles 接口的区别：
-    - 直接读取文件，不经过 SimulationManager
-    - 适用于生成过程中的实时查看
-    - 返回额外的元数据（如文件修改时间、是否正在生成等）
+    와 /profiles 인터페이스의 영역별：
+    - 직접 읽기 파일, SimulationManager를 경유하지 않음
+    - 적용 생성 중의 실시간 보기
+    - 돌아가기 추가의 원 데이터（예: 파일 수정 시간, 진행 중이 아닐 경우: 생성 등）
     
-    Query参数：
-        platform: 平台类型（reddit/twitter，默认reddit）
+    Query파라미터：
+        platform: 플랫폼유형（reddit/twitter, 기본값reddit）
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
                 "simulation_id": "sim_xxxx",
                 "platform": "reddit",
                 "count": 15,
-                "total_expected": 93,  // 预期总数（如果有）
-                "is_generating": true,  // 是否正在生成
+                "total_expected": 93,  // 예상 총 수（만약）
+                "is_generating": true,  //진행 중이 아닐 경우: 생성
                 "file_exists": true,
                 "file_modified_at": "2025-12-04T18:20:00",
                 "profiles": [...]
@@ -1055,28 +1055,28 @@ def get_simulation_profiles_realtime(simulation_id: str):
     try:
         platform = request.args.get('platform', 'reddit')
         
-        # 获取模拟目录
+        # 가져오기시뮬레이션디렉토리
         sim_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
         
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": f"시뮬레이션존재하지 않음: {simulation_id}"
             }), 404
         
-        # 确定文件路径
+        # 확인파일경로
         if platform == "reddit":
             profiles_file = os.path.join(sim_dir, "reddit_profiles.json")
         else:
             profiles_file = os.path.join(sim_dir, "twitter_profiles.csv")
         
-        # 检查文件是否存在
+        # 체크 파일이 저장되어 있는지
         file_exists = os.path.exists(profiles_file)
         profiles = []
         file_modified_at = None
         
         if file_exists:
-            # 获取文件修改时间
+            # 가져오기파일수정시간
             file_stat = os.stat(profiles_file)
             file_modified_at = datetime.fromtimestamp(file_stat.st_mtime).isoformat()
             
@@ -1089,10 +1089,10 @@ def get_simulation_profiles_realtime(simulation_id: str):
                         reader = csv.DictReader(f)
                         profiles = list(reader)
             except (json.JSONDecodeError, Exception) as e:
-                logger.warning(f"读取 profiles 文件失败（可能正在写入中）: {e}")
+                logger.warning(f"읽기 profiles 파일 실패（진행 중: 쓰기 중）: {e}")
                 profiles = []
         
-        # 检查是否正在生成（通过 state.json 判断）
+        # 체크 진행 중이 아닐 경우: 생성（state.json으로 판단）
         is_generating = False
         total_expected = None
         
@@ -1122,7 +1122,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"实时获取Profile失败: {str(e)}")
+        logger.error(f"실시간가져오기Profile실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1133,24 +1133,24 @@ def get_simulation_profiles_realtime(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/config/realtime', methods=['GET'])
 def get_simulation_config_realtime(simulation_id: str):
     """
-    实时获取模拟配置（用于在生成过程中实时查看进度）
+    실시간 가져오기 시뮬레이션 설정（용에서 생성 중 실시간 진행률 보기）
     
-    与 /config 接口的区别：
-    - 直接读取文件，不经过 SimulationManager
-    - 适用于生成过程中的实时查看
-    - 返回额外的元数据（如文件修改时间、是否正在生成等）
-    - 即使配置还没生成完也能返回部分信息
+    와 /config 인터페이스의 영역별：
+    - 직접 읽기 파일, SimulationManager를 경유하지 않음
+    - 적용 생성 중의 실시간 보기
+    - 돌아가기 추가의 원 데이터（예: 파일 수정 시간, 진행 중이 아닐 경우: 생성 등）
+    - 설정이 아직 생성되지 않았더라도 돌아가기 부분 정보
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
                 "simulation_id": "sim_xxxx",
                 "file_exists": true,
                 "file_modified_at": "2025-12-04T18:20:00",
-                "is_generating": true,  // 是否正在生成
-                "generation_stage": "generating_config",  // 当前生成阶段
-                "config": {...}  // 配置内容（如果存在）
+                "is_generating": true,  //진행 중이 아닐 경우: 생성
+                "generation_stage": "generating_config",  // 현재 생성 단계
+                "config": {...}  // 설정 내용（만약 저장되어 있다면）
             }
         }
     """
@@ -1158,25 +1158,25 @@ def get_simulation_config_realtime(simulation_id: str):
     from datetime import datetime
     
     try:
-        # 获取模拟目录
+        # 가져오기시뮬레이션디렉토리
         sim_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
         
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": f"시뮬레이션존재하지 않음: {simulation_id}"
             }), 404
         
-        # 配置文件路径
+        # 설정파일경로
         config_file = os.path.join(sim_dir, "simulation_config.json")
         
-        # 检查文件是否存在
+        # 체크 파일이 저장되어 있는지
         file_exists = os.path.exists(config_file)
         config = None
         file_modified_at = None
         
         if file_exists:
-            # 获取文件修改时间
+            # 가져오기파일수정시간
             file_stat = os.stat(config_file)
             file_modified_at = datetime.fromtimestamp(file_stat.st_mtime).isoformat()
             
@@ -1184,10 +1184,10 @@ def get_simulation_config_realtime(simulation_id: str):
                 with open(config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
             except (json.JSONDecodeError, Exception) as e:
-                logger.warning(f"读取 config 文件失败（可能正在写入中）: {e}")
+                logger.warning(f"읽기 config 파일 실패（진행 중: 쓰기 중）: {e}")
                 config = None
         
-        # 检查是否正在生成（通过 state.json 判断）
+        # 체크 진행 중이 아닐 경우: 생성（state.json으로 판단）
         is_generating = False
         generation_stage = None
         config_generated = False
@@ -1201,7 +1201,7 @@ def get_simulation_config_realtime(simulation_id: str):
                     is_generating = status == "preparing"
                     config_generated = state_data.get("config_generated", False)
                     
-                    # 判断当前阶段
+                    # 판단 현재 단계
                     if is_generating:
                         if state_data.get("profiles_generated", False):
                             generation_stage = "generating_config"
@@ -1212,7 +1212,7 @@ def get_simulation_config_realtime(simulation_id: str):
             except Exception:
                 pass
         
-        # 构建返回数据
+        # 구축돌아가기데이터
         response_data = {
             "simulation_id": simulation_id,
             "file_exists": file_exists,
@@ -1223,7 +1223,7 @@ def get_simulation_config_realtime(simulation_id: str):
             "config": config
         }
         
-        # 如果配置存在，提取一些关键统计信息
+        # 만약 설정이 저장되어 있다면, 일부 주요 통계 정보 추출
         if config:
             response_data["summary"] = {
                 "total_agents": len(config.get("agent_configs", [])),
@@ -1242,7 +1242,7 @@ def get_simulation_config_realtime(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"实时获取Config失败: {str(e)}")
+        logger.error(f"실시간가져오기Config실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1253,14 +1253,14 @@ def get_simulation_config_realtime(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/config', methods=['GET'])
 def get_simulation_config(simulation_id: str):
     """
-    获取模拟配置（LLM智能生成的完整配置）
+    가져오기 시뮬레이션 설정（LLM 지능형 생성의 완전 설정）
     
-    返回包含：
-        - time_config: 时间配置（模拟时长、轮次、高峰/低谷时段）
-        - agent_configs: 每个Agent的活动配置（活跃度、发言频率、立场等）
-        - event_config: 事件配置（初始帖子、热点话题）
-        - platform_configs: 平台配置
-        - generation_reasoning: LLM的配置推理说明
+    돌아가기포함：
+        - time_config: 시간 설정 (시뮬레이션 시각, 라운드 차수, 고峰/비활성 시간대)
+        - agent_configs: 매개 Agent의 활동 설정（활성도、발언 빈도、입장 등）
+        - event_config: 이벤트 설정（초기 게시물、핫토픽）
+        - platform_configs: 플랫폼설정
+        - generation_reasoning: LLM의 설정 추론 설명
     """
     try:
         manager = SimulationManager()
@@ -1269,7 +1269,7 @@ def get_simulation_config(simulation_id: str):
         if not config:
             return jsonify({
                 "success": False,
-                "error": f"模拟配置不存在，请先调用 /prepare 接口"
+                "error": f"시뮬레이션 설정 존재하지 않음, 먼저 호출 /prepare 인터페이스"
             }), 404
         
         return jsonify({
@@ -1278,7 +1278,7 @@ def get_simulation_config(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取配置失败: {str(e)}")
+        logger.error(f"가져오기설정실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1288,7 +1288,7 @@ def get_simulation_config(simulation_id: str):
 
 @simulation_bp.route('/<simulation_id>/config/download', methods=['GET'])
 def download_simulation_config(simulation_id: str):
-    """下载模拟配置文件"""
+    """다운로드시뮬레이션설정파일"""
     try:
         manager = SimulationManager()
         sim_dir = manager._get_simulation_dir(simulation_id)
@@ -1297,7 +1297,7 @@ def download_simulation_config(simulation_id: str):
         if not os.path.exists(config_path):
             return jsonify({
                 "success": False,
-                "error": "配置文件不存在，请先调用 /prepare 接口"
+                "error": "설정 파일이 존재하지 않음, 먼저 호출 /prepare 인터페이스"
             }), 404
         
         return send_file(
@@ -1307,7 +1307,7 @@ def download_simulation_config(simulation_id: str):
         )
         
     except Exception as e:
-        logger.error(f"下载配置失败: {str(e)}")
+        logger.error(f"다운로드설정실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1318,19 +1318,19 @@ def download_simulation_config(simulation_id: str):
 @simulation_bp.route('/script/<script_name>/download', methods=['GET'])
 def download_simulation_script(script_name: str):
     """
-    下载模拟运行脚本文件（通用脚本，位于 backend/scripts/）
+    다운로드 시뮬레이션 실행 스크립트 파일（통용 스크립트, 위치 backend/scripts/）
     
-    script_name可选值：
+    script_name 선택 값：
         - run_twitter_simulation.py
         - run_reddit_simulation.py
         - run_parallel_simulation.py
         - action_logger.py
     """
     try:
-        # 脚本位于 backend/scripts/ 目录
+        # 스크립트 위치 backend/scripts/ 디렉토리
         scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts'))
         
-        # 验证脚本名称
+        # 검증 스크립트 이름
         allowed_scripts = [
             "run_twitter_simulation.py",
             "run_reddit_simulation.py", 
@@ -1341,7 +1341,7 @@ def download_simulation_script(script_name: str):
         if script_name not in allowed_scripts:
             return jsonify({
                 "success": False,
-                "error": f"未知脚本: {script_name}，可选: {allowed_scripts}"
+                "error": f"알 수 없는 스크립트: {script_name}, 선택: {allowed_scripts}"
             }), 400
         
         script_path = os.path.join(scripts_dir, script_name)
@@ -1349,7 +1349,7 @@ def download_simulation_script(script_name: str):
         if not os.path.exists(script_path):
             return jsonify({
                 "success": False,
-                "error": f"脚本文件不存在: {script_name}"
+                "error": f"스크립트 파일이 존재하지 않음: {script_name}"
             }), 404
         
         return send_file(
@@ -1359,7 +1359,7 @@ def download_simulation_script(script_name: str):
         )
         
     except Exception as e:
-        logger.error(f"下载脚本失败: {str(e)}")
+        logger.error(f"다운로드 스크립트 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1367,19 +1367,19 @@ def download_simulation_script(script_name: str):
         }), 500
 
 
-# ============== Profile生成接口（独立使用） ==============
+# ============== 프로필 생성 인터페이스（독립 사용） ==============
 
 @simulation_bp.route('/generate-profiles', methods=['POST'])
 def generate_profiles():
     """
-    直接从图谱生成OASIS Agent Profile（不创建模拟）
+    직접부터 그래프 생성 OASIS Agent Profile（안 생성 시뮬레이션）
     
-    请求（JSON）：
+    요청（JSON）：
         {
-            "graph_id": "mirofish_xxxx",     // 必填
-            "entity_types": ["Student"],      // 可选
-            "use_llm": true,                  // 可选
-            "platform": "reddit"              // 可选
+            "graph_id": "mirofish_xxxx",     // 필수
+            "entity_types": ["Student"],      // 선택
+            "use_llm": true,                  // 선택
+            "platform": "reddit"              // 선택
         }
     """
     try:
@@ -1389,7 +1389,7 @@ def generate_profiles():
         if not graph_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 graph_id"
+                "error": "그래프_id를 제공해 주세요"
             }), 400
         
         entity_types = data.get('entity_types')
@@ -1406,7 +1406,7 @@ def generate_profiles():
         if filtered.filtered_count == 0:
             return jsonify({
                 "success": False,
-                "error": "没有找到符合条件的实体"
+                "error": "없으면 해당 개체를 찾을 수 없습니다"
             }), 400
         
         generator = OasisProfileGenerator()
@@ -1433,7 +1433,7 @@ def generate_profiles():
         })
         
     except Exception as e:
-        logger.error(f"生成Profile失败: {str(e)}")
+        logger.error(f"생성Profile실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1441,35 +1441,35 @@ def generate_profiles():
         }), 500
 
 
-# ============== 模拟运行控制接口 ==============
+# ============== 시뮬레이션 실행 제어 인터페이스 ==============
 
 @simulation_bp.route('/start', methods=['POST'])
 def start_simulation():
     """
-    开始运行模拟
+    시작실행시뮬레이션
 
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",          // 必填，模拟ID
-            "platform": "parallel",                // 可选: twitter / reddit / parallel (默认)
-            "max_rounds": 100,                     // 可选: 最大模拟轮数，用于截断过长的模拟
-            "enable_graph_memory_update": false,   // 可选: 是否将Agent活动动态更新到Zep图谱记忆
-            "force": false                         // 可选: 强制重新开始（会停止运行中的模拟并清理日志）
+            "simulation_id": "sim_xxxx",          // 필수, 시뮬레이션ID
+            "platform": "parallel",                // 선택: twitter / reddit / parallel (기본값)
+            "max_rounds": 100,                     // 선택: 최대 시뮬레이션 라운드 수, 너무 긴 시뮬레이션을 잘라냄
+            "enable_graph_memory_update": false,   // 선택: 에이전트 활동을 동적으로 업데이트하지 않음
+            "force": false                         // 선택: 강제로 다시 시작（중지 실행의 시뮬레이션 및 로그 정리）
         }
 
-    关于 force 参数：
-        - 启用后，如果模拟正在运行或已完成，会先停止并清理运行日志
-        - 清理的内容包括：run_state.json, actions.jsonl, simulation.log 等
-        - 不会清理配置文件（simulation_config.json）和 profile 文件
-        - 适用于需要重新运行模拟的场景
+    force 파라미터에 대하여：
+        - 활성화 후, 만약 시뮬레이션 진행 중: 실행 또는 완료, 먼저 중지하고 실행 로그를 정리
+        - 정리의 내용 포함: run_state.json, actions.jsonl, simulation.log 등
+        - 안정리설정파일（simulation_config.json）와 profile 파일
+        - 시뮬레이션을 다시 실행해야 하는 경우에 적용
 
-    关于 enable_graph_memory_update：
-        - 启用后，模拟中所有Agent的活动（发帖、评论、点赞等）都会实时更新到Zep图谱
-        - 这可以让图谱"记住"模拟过程，用于后续分析或AI对话
-        - 需要模拟关联的项目有有效的 graph_id
-        - 采用批量更新机制，减少API调用次数
+    enable_graph_memory_update에 대하여：
+        - 활성화 후, 시뮬레이션 중 에이전트의 활동（발행, 댓글, 좋아요 등）이 실시간으로 그래프에 업데이트됨
+        - 이로 인해 그래프가 시뮬레이션 과정을 "기억"하게 되어 후속 분석 또는 AI 대화에 사용됨
+        - 시뮬레이션과 관련된 프로젝트에 유효한 graph_id가 필요함
+        - 배치 업데이트 메커니즘을 채택하여 API 호출 횟수를 줄임
 
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -1479,8 +1479,8 @@ def start_simulation():
                 "twitter_running": true,
                 "reddit_running": true,
                 "started_at": "2025-12-01T10:00:00",
-                "graph_memory_update_enabled": true,  // 是否启用了图谱记忆更新
-                "force_restarted": true               // 是否是强制重新开始
+                "graph_memory_update_enabled": true,  // 활성화된 그래프 기억 업데이트
+                "force_restarted": true               // 강제로 다시 시작
             }
         }
     """
@@ -1491,98 +1491,98 @@ def start_simulation():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "시뮬레이션_id를 제공해 주세요"
             }), 400
 
         platform = data.get('platform', 'parallel')
-        max_rounds = data.get('max_rounds')  # 可选：最大模拟轮数
-        enable_graph_memory_update = data.get('enable_graph_memory_update', False)  # 可选：是否启用图谱记忆更新
-        force = data.get('force', False)  # 可选：强制重新开始
+        max_rounds = data.get('max_rounds')  # 선택：최대시뮬레이션라운드 수
+        enable_graph_memory_update = data.get('enable_graph_memory_update', False)  # 선택：비활성화된 그래프 기억 업데이트
+        force = data.get('force', False)  # 선택：강제로 다시 시작
 
-        # 验证 max_rounds 参数
+        # 검증 max_rounds 파라미터
         if max_rounds is not None:
             try:
                 max_rounds = int(max_rounds)
                 if max_rounds <= 0:
                     return jsonify({
                         "success": False,
-                        "error": "max_rounds 必须是正整数"
+                        "error": "max_rounds는 반드시 양의 정수여야 합니다"
                     }), 400
             except (ValueError, TypeError):
                 return jsonify({
                     "success": False,
-                    "error": "max_rounds 必须是有效的整数"
+                    "error": "max_rounds는 반드시 유효한 정수여야 합니다"
                 }), 400
 
         if platform not in ['twitter', 'reddit', 'parallel']:
             return jsonify({
                 "success": False,
-                "error": f"无效的平台类型: {platform}，可选: twitter/reddit/parallel"
+                "error": f"유효하지 않은 플랫폼 유형: {platform}, 선택: twitter/reddit/parallel"
             }), 400
 
-        # 检查模拟是否已准备好
+        # 시뮬레이션이 이미 준비되었는지 확인
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
 
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": f"시뮬레이션존재하지 않음: {simulation_id}"
             }), 404
 
         force_restarted = False
         
-        # 智能处理状态：如果准备工作已完成，允许重新启动
+        # 지능형 처리 상태：만약 준비 작업이 완료되면, 재시작 허용
         if state.status != SimulationStatus.READY:
-            # 检查准备工作是否已完成
+            # 준비 작업이 완료되었는지 확인
             is_prepared, prepare_info = _check_simulation_prepared(simulation_id)
 
             if is_prepared:
-                # 准备工作已完成，检查是否有正在运行的进程
+                # 준비 작업 완료, 진행 중인지 확인: 실행의 프로세스
                 if state.status == SimulationStatus.RUNNING:
-                    # 检查模拟进程是否真的在运行
+                    # 시뮬레이션 프로세스가 실제로 실행 중인지 확인
                     run_state = SimulationRunner.get_run_state(simulation_id)
                     if run_state and run_state.runner_status.value == "running":
-                        # 进程确实在运行
+                        # 프로세스가 실제로 실행 중임
                         if force:
-                            # 强制模式：停止运行中的模拟
-                            logger.info(f"强制模式：停止运行中的模拟 {simulation_id}")
+                            # 강제 모드：중지 실행의 시뮬레이션
+                            logger.info(f"강제 모드：중지 실행의 시뮬레이션 {simulation_id}")
                             try:
                                 SimulationRunner.stop_simulation(simulation_id)
                             except Exception as e:
-                                logger.warning(f"停止模拟时出现警告: {str(e)}")
+                                logger.warning(f"중지 시뮬레이션 시 경고 발생: {str(e)}")
                         else:
                             return jsonify({
                                 "success": False,
-                                "error": f"模拟正在运行中，请先调用 /stop 接口停止，或使用 force=true 强制重新开始"
+                                "error": f"시뮬레이션 진행 중: 실행 중, 먼저 호출 /stop 인터페이스 중지, 또는 사용 force=true 강제로 다시 시작"
                             }), 400
 
-                # 如果是强制模式，清理运行日志
+                # 만약 강제 모드라면, 실행 로그 정리
                 if force:
-                    logger.info(f"强制模式：清理模拟日志 {simulation_id}")
+                    logger.info(f"강제 모드：정리 시뮬레이션 로그 {simulation_id}")
                     cleanup_result = SimulationRunner.cleanup_simulation_logs(simulation_id)
                     if not cleanup_result.get("success"):
-                        logger.warning(f"清理日志时出现警告: {cleanup_result.get('errors')}")
+                        logger.warning(f"정리 로그 시 발생 경고: {cleanup_result.get('errors')}")
                     force_restarted = True
 
-                # 进程不存在或已结束，重置状态为 ready
-                logger.info(f"模拟 {simulation_id} 准备工作已完成，重置状态为 ready（原状态: {state.status.value}）")
+                # 프로세스 존재하지 않음 또는 이미 종료, 초기화 상태로 ready
+                logger.info(f"시뮬레이션 {simulation_id} 준비 작업 완료, 초기화 상태로 ready（원상태: {state.status.value}）")
                 state.status = SimulationStatus.READY
                 manager._save_simulation_state(state)
             else:
-                # 准备工作未完成
+                # 준비 작업 미완료
                 return jsonify({
                     "success": False,
-                    "error": f"模拟未准备好，当前状态: {state.status.value}，请先调用 /prepare 接口"
+                    "error": f"시뮬레이션 준비가 완료되지 않음, 현재 상태: {state.status.value}, 먼저 /prepare 인터페이스를 호출하십시오"
                 }), 400
         
-        # 获取图谱ID（用于图谱记忆更新）
+        # 가져오기그래프ID（용그래프기억업데이트）
         graph_id = None
         if enable_graph_memory_update:
-            # 从模拟状态或项目中获取 graph_id
+            # 부터시뮬레이션상태또는프로젝트중가져오기 graph_id
             graph_id = state.graph_id
             if not graph_id:
-                # 尝试从项目中获取
+                # 시도부터프로젝트중가져오기
                 project = ProjectManager.get_project(state.project_id)
                 if project:
                     graph_id = project.graph_id
@@ -1590,12 +1590,12 @@ def start_simulation():
             if not graph_id:
                 return jsonify({
                     "success": False,
-                    "error": "启用图谱记忆更新需要有效的 graph_id，请确保项目已构建图谱"
+                    "error": "활성화 그래프 기억 업데이트에 유효한 graph_id가 필요합니다, 프로젝트가 이미 구축된 그래프를 보장하십시오"
                 }), 400
             
-            logger.info(f"启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}")
+            logger.info(f"활성화그래프기억업데이트: simulation_id={simulation_id}, graph_id={graph_id}")
         
-        # 启动模拟
+        # 시작시뮬레이션
         run_state = SimulationRunner.start_simulation(
             simulation_id=simulation_id,
             platform=platform,
@@ -1604,7 +1604,7 @@ def start_simulation():
             graph_id=graph_id
         )
         
-        # 更新模拟状态
+        # 업데이트시뮬레이션상태
         state.status = SimulationStatus.RUNNING
         manager._save_simulation_state(state)
         
@@ -1628,7 +1628,7 @@ def start_simulation():
         }), 400
         
     except Exception as e:
-        logger.error(f"启动模拟失败: {str(e)}")
+        logger.error(f"시작시뮬레이션실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1639,14 +1639,14 @@ def start_simulation():
 @simulation_bp.route('/stop', methods=['POST'])
 def stop_simulation():
     """
-    停止模拟
+    중지시뮬레이션
     
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx"  // 必填，模拟ID
+            "simulation_id": "sim_xxxx"  // 필수, 시뮬레이션ID
         }
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -1663,12 +1663,12 @@ def stop_simulation():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주십시오"
             }), 400
         
         run_state = SimulationRunner.stop_simulation(simulation_id)
         
-        # 更新模拟状态
+        # 업데이트시뮬레이션상태
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         if state:
@@ -1687,7 +1687,7 @@ def stop_simulation():
         }), 400
         
     except Exception as e:
-        logger.error(f"停止模拟失败: {str(e)}")
+        logger.error(f"중지시뮬레이션실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1695,14 +1695,14 @@ def stop_simulation():
         }), 500
 
 
-# ============== 实时状态监控接口 ==============
+# ============== 실시간 상태 모니터링 인터페이스 ==============
 
 @simulation_bp.route('/<simulation_id>/run-status', methods=['GET'])
 def get_run_status(simulation_id: str):
     """
-    获取模拟运行实时状态（用于前端轮询）
+    가져오기 시뮬레이션 실행 실시간 상태（용 프론트엔드 라운드 문의）
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -1747,7 +1747,7 @@ def get_run_status(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取运行状态失败: {str(e)}")
+        logger.error(f"가져오기실행상태실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1758,14 +1758,14 @@ def get_run_status(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/run-status/detail', methods=['GET'])
 def get_run_status_detail(simulation_id: str):
     """
-    获取模拟运行详细状态（包含所有动作）
+    가져오기 시뮬레이션 실행 상세 상태（포함 소액션）
     
-    用于前端展示实时动态
+    용 프론트엔드 표시 실시간 동적으로
     
-    Query参数：
-        platform: 过滤平台（twitter/reddit，可选）
+    Query파라미터：
+        platform: 필터플랫폼（twitter/reddit, 선택）
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -1787,8 +1787,8 @@ def get_run_status_detail(simulation_id: str):
                     },
                     ...
                 ],
-                "twitter_actions": [...],  # Twitter 平台的所有动作
-                "reddit_actions": [...]    # Reddit 平台的所有动作
+                "twitter_actions": [...],  # Twitter 플랫폼의 소액션
+                "reddit_actions": [...]    # Reddit 플랫폼의 소액션
             }
         }
     """
@@ -1808,13 +1808,13 @@ def get_run_status_detail(simulation_id: str):
                 }
             })
         
-        # 获取完整的动作列表
+        # 가져오기 완전한 액션 목록
         all_actions = SimulationRunner.get_all_actions(
             simulation_id=simulation_id,
             platform=platform_filter
         )
         
-        # 分平台获取动作
+        # 분 플랫폼 가져오기 액션
         twitter_actions = SimulationRunner.get_all_actions(
             simulation_id=simulation_id,
             platform="twitter"
@@ -1825,7 +1825,7 @@ def get_run_status_detail(simulation_id: str):
             platform="reddit"
         ) if not platform_filter or platform_filter == "reddit" else []
         
-        # 获取当前轮次的动作（recent_actions 只展示最新一轮）
+        # 가져오기 현재 라운드 차의 액션（recent_actions는 최신 한 라운드만 표시）
         current_round = run_state.current_round
         recent_actions = SimulationRunner.get_all_actions(
             simulation_id=simulation_id,
@@ -1833,13 +1833,13 @@ def get_run_status_detail(simulation_id: str):
             round_num=current_round
         ) if current_round > 0 else []
         
-        # 获取基础状态信息
+        # 가져오기 기본 상태 정보
         result = run_state.to_dict()
         result["all_actions"] = [a.to_dict() for a in all_actions]
         result["twitter_actions"] = [a.to_dict() for a in twitter_actions]
         result["reddit_actions"] = [a.to_dict() for a in reddit_actions]
         result["rounds_count"] = len(run_state.rounds)
-        # recent_actions 只展示当前最新一轮两个平台的内容
+        # recent_actions는 현재 최신 한 라운드 두 개 플랫폼의 내용을 표시
         result["recent_actions"] = [a.to_dict() for a in recent_actions]
         
         return jsonify({
@@ -1848,7 +1848,7 @@ def get_run_status_detail(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取详细状态失败: {str(e)}")
+        logger.error(f"가져오기 상세 상태 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1859,16 +1859,16 @@ def get_run_status_detail(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/actions', methods=['GET'])
 def get_simulation_actions(simulation_id: str):
     """
-    获取模拟中的Agent动作历史
+    가져오기 시뮬레이션의 Agent 액션 역사
     
-    Query参数：
-        limit: 返回数量（默认100）
-        offset: 偏移量（默认0）
-        platform: 过滤平台（twitter/reddit）
-        agent_id: 过滤Agent ID
-        round_num: 过滤轮次
+    Query파라미터：
+        limit: 돌아가기수량（기본값100）
+        offset: 오프셋（기본값 0）
+        platform: 필터플랫폼（twitter/reddit）
+        agent_id: 필터Agent ID
+        round_num: 필터 라운드 차
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -1902,7 +1902,7 @@ def get_simulation_actions(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取动作历史失败: {str(e)}")
+        logger.error(f"가져오기 액션 역사 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1913,15 +1913,15 @@ def get_simulation_actions(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/timeline', methods=['GET'])
 def get_simulation_timeline(simulation_id: str):
     """
-    获取模拟时间线（按轮次汇总）
+    가져오기 시뮬레이션 시간선 (라운드 차수에 따라 汇总)
     
-    用于前端展示进度条和时间线视图
+    용 프론트엔드 표시 진행률 개와 시간선 뷰
     
-    Query参数：
-        start_round: 起始轮次（默认0）
-        end_round: 结束轮次（默认全部）
+    Query파라미터：
+        start_round: 시작 라운드 차（기본값 0）
+        end_round: 종료 라운드 차（기본값 전체）
     
-    返回每轮的汇总信息
+    돌아가기 매 라운드의 汇总 정보
     """
     try:
         start_round = request.args.get('start_round', 0, type=int)
@@ -1942,7 +1942,7 @@ def get_simulation_timeline(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取时间线失败: {str(e)}")
+        logger.error(f"가져오기 시간선 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1953,9 +1953,9 @@ def get_simulation_timeline(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/agent-stats', methods=['GET'])
 def get_agent_stats(simulation_id: str):
     """
-    获取每个Agent的统计信息
+    가져오기 매개 Agent의 통계 정보
     
-    用于前端展示Agent活跃度排行、动作分布等
+    용 프론트엔드 표시 Agent 활성도 랭킹, 액션 분포 등
     """
     try:
         stats = SimulationRunner.get_agent_stats(simulation_id)
@@ -1969,7 +1969,7 @@ def get_agent_stats(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取Agent统计失败: {str(e)}")
+        logger.error(f"가져오기Agent통계실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -1977,19 +1977,19 @@ def get_agent_stats(simulation_id: str):
         }), 500
 
 
-# ============== 数据库查询接口 ==============
+# ============== 데이터베이스조회인터페이스 ==============
 
 @simulation_bp.route('/<simulation_id>/posts', methods=['GET'])
 def get_simulation_posts(simulation_id: str):
     """
-    获取模拟中的帖子
+    가져오기 시뮬레이션의 게시물
     
-    Query参数：
-        platform: 平台类型（twitter/reddit）
-        limit: 返回数量（默认50）
-        offset: 偏移量
+    Query파라미터：
+        platform: 플랫폼유형（twitter/reddit）
+        limit: 돌아가기수량（기본값50）
+        offset: 오프셋
     
-    返回帖子列表（从SQLite数据库读取）
+    돌아가기 게시물 목록（부터 SQLite 데이터베이스 읽기）
     """
     try:
         platform = request.args.get('platform', 'reddit')
@@ -2011,7 +2011,7 @@ def get_simulation_posts(simulation_id: str):
                     "platform": platform,
                     "count": 0,
                     "posts": [],
-                    "message": "数据库不存在，模拟可能尚未运行"
+                    "message": "데이터베이스 존재하지 않음, 시뮬레이션 아직 실행되지 않음"
                 }
             })
         
@@ -2049,7 +2049,7 @@ def get_simulation_posts(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取帖子失败: {str(e)}")
+        logger.error(f"가져오기 게시물 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2060,12 +2060,12 @@ def get_simulation_posts(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/comments', methods=['GET'])
 def get_simulation_comments(simulation_id: str):
     """
-    获取模拟中的评论（仅Reddit）
+    가져오기 시뮬레이션의 댓글（만 Reddit）
     
-    Query参数：
-        post_id: 过滤帖子ID（可选）
-        limit: 返回数量
-        offset: 偏移量
+    Query파라미터：
+        post_id: 필터 게시물 ID（선택）
+        limit: 돌아가기수량
+        offset: 오프셋
     """
     try:
         post_id = request.args.get('post_id')
@@ -2124,7 +2124,7 @@ def get_simulation_comments(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取评论失败: {str(e)}")
+        logger.error(f"가져오기 댓글 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2132,31 +2132,31 @@ def get_simulation_comments(simulation_id: str):
         }), 500
 
 
-# ============== Interview 采访接口 ==============
+# ============== Interview 인터뷰 인터페이스 ==============
 
 @simulation_bp.route('/interview', methods=['POST'])
 def interview_agent():
     """
-    采访单个Agent
+    인터뷰 단일 Agent
 
-    注意：此功能需要模拟环境处于运行状态（完成模拟循环后进入等待命令模式）
+    주의: 이 기능은 시뮬레이션 환경이 실행 상태여야 합니다 (완료 후 시뮬레이션 루프 진입 대기 명령 모드)
 
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",       // 必填，模拟ID
-            "agent_id": 0,                     // 必填，Agent ID
-            "prompt": "你对这件事有什么看法？",  // 必填，采访问题
-            "platform": "twitter",             // 可选，指定平台（twitter/reddit）
-                                               // 不指定时：双平台模拟同时采访两个平台
-            "timeout": 60                      // 可选，超时时间（秒），默认60
+            "simulation_id": "sim_xxxx",       // 필수, 시뮬레이션ID
+            "agent_id": 0,                     // 필수, Agent ID
+            "prompt": "이 일에 대한 당신의 의견은 무엇인가요?",  // 필수, 인터뷰 질문
+            "platform": "twitter",             // 선택, 지정 플랫폼 (twitter/reddit)
+                                               // 지정하지 않을 경우: 듀얼 플랫폼 시뮬레이션으로 두 개 플랫폼에서 동시에 인터뷰
+            "timeout": 60                      // 선택, 시간 초과시간（초）, 기본값60
         }
 
-    返回（不指定platform，双平台模式）：
+    돌아가기 (지정하지 않은 platform, 듀얼 플랫폼 모드):
         {
             "success": true,
             "data": {
                 "agent_id": 0,
-                "prompt": "你对这件事有什么看法？",
+                "prompt": "이 일에 대한 당신의 의견은 무엇인가요?",
                 "result": {
                     "agent_id": 0,
                     "prompt": "...",
@@ -2169,15 +2169,15 @@ def interview_agent():
             }
         }
 
-    返回（指定platform）：
+    돌아가기 (지정한 platform):
         {
             "success": true,
             "data": {
                 "agent_id": 0,
-                "prompt": "你对这件事有什么看法？",
+                "prompt": "이 일에 대한 당신의 의견은 무엇인가요?",
                 "result": {
                     "agent_id": 0,
-                    "response": "我认为...",
+                    "response": "나는 로...",
                     "platform": "twitter",
                     "timestamp": "2025-12-08T10:00:00"
                 },
@@ -2191,42 +2191,42 @@ def interview_agent():
         simulation_id = data.get('simulation_id')
         agent_id = data.get('agent_id')
         prompt = data.get('prompt')
-        platform = data.get('platform')  # 可选：twitter/reddit/None
+        platform = data.get('platform')  # 선택：twitter/reddit/None
         timeout = data.get('timeout', 60)
         
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주세요"
             }), 400
         
         if agent_id is None:
             return jsonify({
                 "success": False,
-                "error": "请提供 agent_id"
+                "error": "agent_id를 제공해 주세요"
             }), 400
         
         if not prompt:
             return jsonify({
                 "success": False,
-                "error": "请提供 prompt（采访问题）"
+                "error": "prompt (인터뷰 질문)를 제공해 주세요"
             }), 400
         
-        # 验证platform参数
+        # 검증platform파라미터
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform 参数只能是 'twitter' 或 'reddit'"
+                "error": "platform 파라미터는 'twitter' 또는 'reddit'만 가능합니다"
             }), 400
         
-        # 检查环境状态
+        # 환경 상태 확인
         if not SimulationRunner.check_env_alive(simulation_id):
             return jsonify({
                 "success": False,
-                "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。"
+                "error": "시뮬레이션 환경이 실행되지 않았거나 이미 닫혔습니다. 시뮬레이션이 완료되고 대기 명령 모드에 진입했는지 확인해 주세요."
             }), 400
         
-        # 优化prompt，添加前缀避免Agent调用工具
+        # 프롬프트 최적화, 추가 접두어로 Agent 호출 도구 회피
         optimized_prompt = optimize_interview_prompt(prompt)
         
         result = SimulationRunner.interview_agent(
@@ -2251,11 +2251,11 @@ def interview_agent():
     except TimeoutError as e:
         return jsonify({
             "success": False,
-            "error": f"等待Interview响应超时: {str(e)}"
+            "error": f"대기Interview응답시간 초과: {str(e)}"
         }), 504
         
     except Exception as e:
-        logger.error(f"Interview失败: {str(e)}")
+        logger.error(f"Interview실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2266,30 +2266,30 @@ def interview_agent():
 @simulation_bp.route('/interview/batch', methods=['POST'])
 def interview_agents_batch():
     """
-    批量采访多个Agent
+    배치 인터뷰 다수 Agent
 
-    注意：此功能需要模拟环境处于运行状态
+    주의: 이 기능은 시뮬레이션 환경이 실행 상태여야 합니다
 
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",       // 必填，模拟ID
-            "interviews": [                    // 必填，采访列表
+            "simulation_id": "sim_xxxx",       // 필수, 시뮬레이션ID
+            "interviews": [                    // 필수, 인터뷰 목록
                 {
                     "agent_id": 0,
-                    "prompt": "你对A有什么看法？",
-                    "platform": "twitter"      // 可选，指定该Agent的采访平台
+                    "prompt": "A에 대한 당신의 의견은 무엇인가요?",
+                    "platform": "twitter"      // 선택, 해당 Agent의 인터뷰 플랫폼 지정
                 },
                 {
                     "agent_id": 1,
-                    "prompt": "你对B有什么看法？"  // 不指定platform则使用默认值
+                    "prompt": "B에 대한 당신의 의견은 무엇인가요?"  // platform을 지정하지 않으면 기본값 사용
                 }
             ],
-            "platform": "reddit",              // 可选，默认平台（被每项的platform覆盖）
-                                               // 不指定时：双平台模拟每个Agent同时采访两个平台
-            "timeout": 120                     // 可选，超时时间（秒），默认120
+            "platform": "reddit",              // 선택, 기본값 플랫폼 (각 항목의 platform이 덮어씀)
+                                               // 지정하지 않을 경우: 듀얼 플랫폼 시뮬레이션으로 각 Agent에서 동시에 두 개 플랫폼 인터뷰
+            "timeout": 120                     // 선택, 시간 초과시간（초）, 기본값120
         }
 
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -2312,56 +2312,56 @@ def interview_agents_batch():
 
         simulation_id = data.get('simulation_id')
         interviews = data.get('interviews')
-        platform = data.get('platform')  # 可选：twitter/reddit/None
+        platform = data.get('platform')  # 선택：twitter/reddit/None
         timeout = data.get('timeout', 120)
 
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주세요"
             }), 400
 
         if not interviews or not isinstance(interviews, list):
             return jsonify({
                 "success": False,
-                "error": "请提供 interviews（采访列表）"
+                "error": "interviews (인터뷰 목록)를 제공해 주세요"
             }), 400
 
-        # 验证platform参数
+        # 검증platform파라미터
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform 参数只能是 'twitter' 或 'reddit'"
+                "error": "platform 파라미터는 'twitter' 또는 'reddit'만 가능합니다"
             }), 400
 
-        # 验证每个采访项
+        # 각 인터뷰 항목 검증
         for i, interview in enumerate(interviews):
             if 'agent_id' not in interview:
                 return jsonify({
                     "success": False,
-                    "error": f"采访列表第{i+1}项缺少 agent_id"
+                    "error": f"인터뷰 목록 {i+1} 항목에 agent_id가 누락되었습니다"
                 }), 400
             if 'prompt' not in interview:
                 return jsonify({
                     "success": False,
-                    "error": f"采访列表第{i+1}项缺少 prompt"
+                    "error": f"인터뷰 목록 {i+1} 항목에 prompt가 누락되었습니다"
                 }), 400
-            # 验证每项的platform（如果有）
+            # 각 항목의 platform 검증 (만약)
             item_platform = interview.get('platform')
             if item_platform and item_platform not in ("twitter", "reddit"):
                 return jsonify({
                     "success": False,
-                    "error": f"采访列表第{i+1}项的platform只能是 'twitter' 或 'reddit'"
+                    "error": f"인터뷰 목록 {i+1} 항목의 platform은 'twitter' 또는 'reddit'만 가능합니다"
                 }), 400
 
-        # 检查环境状态
+        # 환경 상태 확인
         if not SimulationRunner.check_env_alive(simulation_id):
             return jsonify({
                 "success": False,
-                "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。"
+                "error": "시뮬레이션 환경이 실행되지 않았거나 이미 닫혔습니다. 시뮬레이션이 완료되고 대기 명령 모드에 진입했는지 확인해 주세요."
             }), 400
 
-        # 优化每个采访项的prompt，添加前缀避免Agent调用工具
+        # 각 인터뷰 항목의 프롬프트 최적화, 추가 접두어로 Agent 호출 도구 회피
         optimized_interviews = []
         for interview in interviews:
             optimized_interview = interview.copy()
@@ -2389,11 +2389,11 @@ def interview_agents_batch():
     except TimeoutError as e:
         return jsonify({
             "success": False,
-            "error": f"等待批量Interview响应超时: {str(e)}"
+            "error": f"대기 배치 Interview 응답 시간 초과: {str(e)}"
         }), 504
 
     except Exception as e:
-        logger.error(f"批量Interview失败: {str(e)}")
+        logger.error(f"배치 Interview 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2404,20 +2404,20 @@ def interview_agents_batch():
 @simulation_bp.route('/interview/all', methods=['POST'])
 def interview_all_agents():
     """
-    全局采访 - 使用相同问题采访所有Agent
+    전역 인터뷰 - 동일한 질문으로 Agent를 인터뷰
 
-    注意：此功能需要模拟环境处于运行状态
+    주의：이 기능은 시뮬레이션 환경이 실행 상태여야 합니다.
 
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",            // 必填，模拟ID
-            "prompt": "你对这件事整体有什么看法？",  // 必填，采访问题（所有Agent使用相同问题）
-            "platform": "reddit",                   // 可选，指定平台（twitter/reddit）
-                                                    // 不指定时：双平台模拟每个Agent同时采访两个平台
-            "timeout": 180                          // 可选，超时时间（秒），默认180
+            "simulation_id": "sim_xxxx",            // 필수, 시뮬레이션ID
+            "prompt": "이 일에 대한 전반적인 의견은 무엇인가요?",  // 필수, 인터뷰 질문（소Agent사용 동일 질문）
+            "platform": "reddit",                   // 선택, 지정 플랫폼（twitter/reddit）
+                                                    // 안 지정 시：듀얼 플랫폼 시뮬레이션에서 각 Agent가 동시에 두 개 플랫폼을 인터뷰
+            "timeout": 180                          // 선택, 시간 초과시간（초）, 기본값180
         }
 
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -2439,36 +2439,36 @@ def interview_all_agents():
 
         simulation_id = data.get('simulation_id')
         prompt = data.get('prompt')
-        platform = data.get('platform')  # 可选：twitter/reddit/None
+        platform = data.get('platform')  # 선택：twitter/reddit/None
         timeout = data.get('timeout', 180)
 
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주세요"
             }), 400
 
         if not prompt:
             return jsonify({
                 "success": False,
-                "error": "请提供 prompt（采访问题）"
+                "error": "prompt（인터뷰 질문）을 제공해 주세요"
             }), 400
 
-        # 验证platform参数
+        # 검증platform파라미터
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform 参数只能是 'twitter' 或 'reddit'"
+                "error": "platform 파라미터는 'twitter' 또는 'reddit'만 가능합니다"
             }), 400
 
-        # 检查环境状态
+        # 환경 상태 확인
         if not SimulationRunner.check_env_alive(simulation_id):
             return jsonify({
                 "success": False,
-                "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。"
+                "error": "시뮬레이션 환경이 실행 중이 아니거나 이미 닫혔습니다. 시뮬레이션이 완료되었는지 확인하고 대기 명령 모드로 진입하세요."
             }), 400
 
-        # 优化prompt，添加前缀避免Agent调用工具
+        # prompt 최적화, 추가 접두어로 Agent 호출 도구 회피
         optimized_prompt = optimize_interview_prompt(prompt)
 
         result = SimulationRunner.interview_all_agents(
@@ -2492,11 +2492,11 @@ def interview_all_agents():
     except TimeoutError as e:
         return jsonify({
             "success": False,
-            "error": f"等待全局Interview响应超时: {str(e)}"
+            "error": f"대기 전역 Interview 응답 시간 초과: {str(e)}"
         }), 504
 
     except Exception as e:
-        logger.error(f"全局Interview失败: {str(e)}")
+        logger.error(f"전역 Interview 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2507,20 +2507,20 @@ def interview_all_agents():
 @simulation_bp.route('/interview/history', methods=['POST'])
 def get_interview_history():
     """
-    获取Interview历史记录
+    인터뷰 역사 기록 가져오기
 
-    从模拟数据库中读取所有Interview记录
+    시뮬레이션 데이터베이스에서 인터뷰 기록 읽기
 
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",  // 必填，模拟ID
-            "platform": "reddit",          // 可选，平台类型（reddit/twitter）
-                                           // 不指定则返回两个平台的所有历史
-            "agent_id": 0,                 // 可选，只获取该Agent的采访历史
-            "limit": 100                   // 可选，返回数量，默认100
+            "simulation_id": "sim_xxxx",  // 필수, 시뮬레이션ID
+            "platform": "reddit",          // 선택, 플랫폼유형（reddit/twitter）
+                                           // 안 지정 시 두 개 플랫폼의 역사로 돌아감
+            "agent_id": 0,                 // 선택, 해당 Agent의 인터뷰 역사만 가져오기
+            "limit": 100                   // 선택, 돌아가기수량, 기본값100
         }
 
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -2528,8 +2528,8 @@ def get_interview_history():
                 "history": [
                     {
                         "agent_id": 0,
-                        "response": "我认为...",
-                        "prompt": "你对这件事有什么看法？",
+                        "response": "나는 로...",
+                        "prompt": "이 일에 대한 의견은 무엇인가요?",
                         "timestamp": "2025-12-08T10:00:00",
                         "platform": "reddit"
                     },
@@ -2542,14 +2542,14 @@ def get_interview_history():
         data = request.get_json() or {}
         
         simulation_id = data.get('simulation_id')
-        platform = data.get('platform')  # 不指定则返回两个平台的历史
+        platform = data.get('platform')  # 안 지정 시 두 개 플랫폼의 역사로 돌아감
         agent_id = data.get('agent_id')
         limit = data.get('limit', 100)
         
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주세요"
             }), 400
 
         history = SimulationRunner.get_interview_history(
@@ -2568,7 +2568,7 @@ def get_interview_history():
         })
 
     except Exception as e:
-        logger.error(f"获取Interview历史失败: {str(e)}")
+        logger.error(f"인터뷰 역사 가져오기 실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2579,16 +2579,16 @@ def get_interview_history():
 @simulation_bp.route('/env-status', methods=['POST'])
 def get_env_status():
     """
-    获取模拟环境状态
+    가져오기시뮬레이션환경상태
 
-    检查模拟环境是否存活（可以接收Interview命令）
+    시뮬레이션 환경이 살아 있는지 확인 (인터뷰 명령 수신을 위해)
 
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx"  // 必填，模拟ID
+            "simulation_id": "sim_xxxx"  // 필수, 시뮬레이션ID
         }
 
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
@@ -2596,7 +2596,7 @@ def get_env_status():
                 "env_alive": true,
                 "twitter_available": true,
                 "reddit_available": true,
-                "message": "环境正在运行，可以接收Interview命令"
+                "message": "환경진행 중: 실행, 하여수신Interview명령"
             }
         }
     """
@@ -2608,18 +2608,18 @@ def get_env_status():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주세요"
             }), 400
 
         env_alive = SimulationRunner.check_env_alive(simulation_id)
         
-        # 获取更详细的状态信息
+        # 더 자세한 상태 정보 가져오기
         env_status = SimulationRunner.get_env_status_detail(simulation_id)
 
         if env_alive:
-            message = "环境正在运行，可以接收Interview命令"
+            message = "환경진행 중: 실행, 하여수신Interview명령"
         else:
-            message = "环境未运行或已关闭"
+            message = "환경이 실행 중이 아니거나 이미 닫혔습니다"
 
         return jsonify({
             "success": True,
@@ -2633,7 +2633,7 @@ def get_env_status():
         })
 
     except Exception as e:
-        logger.error(f"获取环境状态失败: {str(e)}")
+        logger.error(f"가져오기환경상태실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -2644,24 +2644,24 @@ def get_env_status():
 @simulation_bp.route('/close-env', methods=['POST'])
 def close_simulation_env():
     """
-    关闭模拟环境
+    닫기시뮬레이션환경
     
-    向模拟发送关闭环境命令，使其优雅退出等待命令模式。
+    시뮬레이션에 닫기 환경 명령을 전송하여 우아하게 대기 명령 모드에서 종료합니다.
     
-    注意：这不同于 /stop 接口，/stop 会强制终止进程，
-    而此接口会让模拟优雅地关闭环境并退出。
+    주의：이것은 /stop 인터페이스와 다릅니다. /stop은 프로세스를 강제로 종료합니다,
+    반면 이 인터페이스는 시뮬레이션을 우아하게 닫고 환경을 종료합니다.
     
-    请求（JSON）：
+    요청（JSON）：
         {
-            "simulation_id": "sim_xxxx",  // 必填，模拟ID
-            "timeout": 30                  // 可选，超时时间（秒），默认30
+            "simulation_id": "sim_xxxx",  // 필수, 시뮬레이션ID
+            "timeout": 30                  // 선택, 시간 초과시간（초）, 기본값30
         }
     
-    返回：
+    돌아가기：
         {
             "success": true,
             "data": {
-                "message": "环境关闭命令已发送",
+                "message": "환경닫기명령이미전송",
                 "result": {...},
                 "timestamp": "2025-12-08T10:00:01"
             }
@@ -2676,7 +2676,7 @@ def close_simulation_env():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": "simulation_id를 제공해 주세요"
             }), 400
         
         result = SimulationRunner.close_simulation_env(
@@ -2684,7 +2684,7 @@ def close_simulation_env():
             timeout=timeout
         )
         
-        # 更新模拟状态
+        # 업데이트시뮬레이션상태
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         if state:
@@ -2703,7 +2703,7 @@ def close_simulation_env():
         }), 400
         
     except Exception as e:
-        logger.error(f"关闭环境失败: {str(e)}")
+        logger.error(f"닫기환경실패: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e),

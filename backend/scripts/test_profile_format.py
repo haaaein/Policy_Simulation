@@ -1,8 +1,8 @@
 """
-测试Profile格式生成是否符合OASIS要求
-验证：
-1. Twitter Profile生成CSV格式
-2. Reddit Profile生成JSON详细格式
+테스트Profile형식생성부합하는지OASIS요구사항
+검증：
+1. Twitter Profile생성CSV형식
+2. Reddit Profile 생성 JSON 상세 형식  
 """
 
 import os
@@ -11,19 +11,19 @@ import json
 import csv
 import tempfile
 
-# 添加项目路径
+# 프로젝트 경로 추가
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.services.oasis_profile_generator import OasisProfileGenerator, OasisAgentProfile
 
 
 def test_profile_formats():
-    """测试Profile格式"""
+    """테스트Profile형식"""
     print("=" * 60)
-    print("OASIS Profile格式测试")
+    print("OASIS Profile형식테스트")
     print("=" * 60)
     
-    # 创建测试Profile数据
+    # 생성테스트Profile데이터
     test_profiles = [
         OasisAgentProfile(
             user_id=0,
@@ -63,84 +63,84 @@ def test_profile_formats():
     
     generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
     
-    # 使用临时目录
+    # 사용임시디렉토리
     with tempfile.TemporaryDirectory() as temp_dir:
         twitter_path = os.path.join(temp_dir, "twitter_profiles.csv")
         reddit_path = os.path.join(temp_dir, "reddit_profiles.json")
         
-        # 测试Twitter CSV格式
-        print("\n1. 测试Twitter Profile (CSV格式)")
+        # 테스트Twitter CSV형식
+        print("\n1. 테스트Twitter Profile (CSV형식)")
         print("-" * 40)
         generator._save_twitter_csv(test_profiles, twitter_path)
         
-        # 读取并验证CSV
+        # 읽고검증CSV
         with open(twitter_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             rows = list(reader)
             
-        print(f"   文件: {twitter_path}")
-        print(f"   行数: {len(rows)}")
-        print(f"   表头: {list(rows[0].keys())}")
-        print(f"\n   示例数据 (第1行):")
+        print(f"   파일: {twitter_path}")
+        print(f"   행수: {len(rows)}")  
+        print(f"   헤더: {list(rows[0].keys())}")
+        print(f"\n   예시 데이터 (제1행):")  
         for key, value in rows[0].items():
             print(f"     {key}: {value}")
         
-        # 验证必需字段
+        # 검증 필수 필드  
         required_twitter_fields = ['user_id', 'user_name', 'name', 'bio', 
                                    'friend_count', 'follower_count', 'statuses_count', 'created_at']
         missing = set(required_twitter_fields) - set(rows[0].keys())
         if missing:
-            print(f"\n   [错误] 缺少字段: {missing}")
+            print(f"\n   [오류] 필드 누락: {missing}")  
         else:
-            print(f"\n   [通过] 所有必需字段都存在")
+            print(f"\n   [통] 필수 필드가 모두 존재합니다")  
         
-        # 测试Reddit JSON格式
-        print("\n2. 测试Reddit Profile (JSON详细格式)")
+        # 테스트Reddit JSON형식
+        print("\n2. 테스트 Reddit Profile (JSON 상세 형식)")  
         print("-" * 40)
         generator._save_reddit_json(test_profiles, reddit_path)
         
-        # 读取并验证JSON
+        # 읽고검증JSON
         with open(reddit_path, 'r', encoding='utf-8') as f:
             reddit_data = json.load(f)
         
-        print(f"   文件: {reddit_path}")
-        print(f"   条目数: {len(reddit_data)}")
-        print(f"   字段: {list(reddit_data[0].keys())}")
-        print(f"\n   示例数据 (第1条):")
+        print(f"   파일: {reddit_path}")
+        print(f"   개목수: {len(reddit_data)}")  
+        print(f"   필드: {list(reddit_data[0].keys())}")  
+        print(f"\n   예시 데이터 (제1개):")  
         print(json.dumps(reddit_data[0], ensure_ascii=False, indent=4))
         
-        # 验证详细格式字段
+        # 검증 상세 형식 필드  
         required_reddit_fields = ['realname', 'username', 'bio', 'persona']
         optional_reddit_fields = ['age', 'gender', 'mbti', 'country', 'profession', 'interested_topics']
         
         missing = set(required_reddit_fields) - set(reddit_data[0].keys())
         if missing:
-            print(f"\n   [错误] 缺少必需字段: {missing}")
+            print(f"\n   [오류] 필수 필드 누락: {missing}")  
         else:
-            print(f"\n   [通过] 所有必需字段都存在")
+            print(f"\n   [통] 필수 필드가 모두 존재합니다")  
         
         present_optional = set(optional_reddit_fields) & set(reddit_data[0].keys())
-        print(f"   [信息] 可选字段: {present_optional}")
+        print(f"   [정보] 선택 필드: {present_optional}")  
     
     print("\n" + "=" * 60)
-    print("测试完成!")
+    print("테스트완료!")
     print("=" * 60)
 
 
 def show_expected_formats():
-    """显示OASIS期望的格式"""
+    """표시 OASIS 기대의 형식"""  
     print("\n" + "=" * 60)
-    print("OASIS 期望的Profile格式参考")
+    print("OASIS 기대의 Profile 형식 참고")  
     print("=" * 60)
     
-    print("\n1. Twitter Profile (CSV格式)")
+    print("\n1. Twitter Profile (CSV형식)")
     print("-" * 40)
     twitter_example = """user_id,user_name,name,bio,friend_count,follower_count,statuses_count,created_at
 0,user0,User Zero,I am user zero with interests in technology.,100,150,500,2023-01-01
 1,user1,User One,Tech enthusiast and coffee lover.,200,250,1000,2023-01-02"""
     print(twitter_example)
     
-    print("\n2. Reddit Profile (JSON详细格式)")
+    print("\n2. Reddit Profile (JSON 상세 형식)")
     print("-" * 40)
     reddit_example = [
         {

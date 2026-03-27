@@ -1,5 +1,5 @@
 """
-API路由模块
+API라우팅모듈
 """
 
 from flask import Blueprint

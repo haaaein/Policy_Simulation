@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROFISH</div>
+        <div class="brand" @click="router.push('/')">PolicySim</div>
       </div>
       
       <div class="header-center">
@@ -15,7 +15,7 @@
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: '图谱', split: '双栏', workbench: '工作台' }[mode] }}
+            {{ { graph: '그래프', split: '분할 화면', workbench: '작업대' }[mode] }}
           </button>
         </div>
       </div>
@@ -23,7 +23,7 @@
       <div class="header-right">
         <div class="workflow-step">
           <span class="step-num">Step 3/5</span>
-          <span class="step-name">开始模拟</span>
+          <span class="step-name">시뮬레이션 시작</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -47,7 +47,7 @@
         />
       </div>
 
-      <!-- Right Panel: Step3 开始模拟 -->
+      <!-- Right Panel: Step3 시뮬레이션 시작 -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
         <Step3Simulation
           :simulationId="currentSimulationId"
@@ -87,9 +87,9 @@ const viewMode = ref('split')
 
 // Data State
 const currentSimulationId = ref(route.params.simulationId)
-// 直接在初始化时从 query 参数获取 maxRounds，确保子组件能立即获取到值
+// 초기화 시부터 query 파라미터 가져오기 maxRounds, 보장 자식 컴포넌트 즉시 가져오기 값  
 const maxRounds = ref(route.query.maxRounds ? parseInt(route.query.maxRounds) : null)
-const minutesPerRound = ref(30) // 默认每轮30分钟
+const minutesPerRound = ref(30) // 기본값 매 라운드 30분  
 const projectData = ref(null)
 const graphData = ref(null)
 const graphLoading = ref(false)
@@ -145,104 +145,104 @@ const toggleMaximize = (target) => {
 }
 
 const handleGoBack = async () => {
-  // 在返回 Step 2 之前，先关闭正在运行的模拟
-  addLog('准备返回 Step 2，正在关闭模拟...')
+  // 돌아가기 Step 2 전에, 먼저 닫기 진행 중: 실행의 시뮬레이션  
+  addLog('준비돌아가기 Step 2，진행 중: 닫기시뮬레이션...')
   
-  // 停止轮询
+  // 중지 라운드 문의  
   stopGraphRefresh()
   
   try {
-    // 先尝试优雅关闭模拟环境
+    // 먼저 시도 우아하게 닫기 시뮬레이션 환경  
     const envStatusRes = await getEnvStatus({ simulation_id: currentSimulationId.value })
     
     if (envStatusRes.success && envStatusRes.data?.env_alive) {
-      addLog('正在关闭模拟环境...')
+      addLog('진행 중: 닫기시뮬레이션환경...')
       try {
         await closeSimulationEnv({ 
           simulation_id: currentSimulationId.value,
           timeout: 10
         })
-        addLog('✓ 模拟环境已关闭')
+        addLog('✓ 시뮬레이션환경이미닫기')
       } catch (closeErr) {
-        addLog(`关闭模拟环境失败，尝试强制停止...`)
+        addLog(`닫기 시뮬레이션 환경 실패，시도 강제 중지...`)  
         try {
           await stopSimulation({ simulation_id: currentSimulationId.value })
-          addLog('✓ 模拟已强制停止')
+          addLog('✓ 시뮬레이션 이미 강제 중지')  
         } catch (stopErr) {
-          addLog(`强制停止失败: ${stopErr.message}`)
+          addLog(`강제 중지 실패: ${stopErr.message}`)  
         }
       }
     } else {
-      // 环境未运行，检查是否需要停止进程
+      // 환경 미 실행，검사 여부 중지 프로세스  
       if (isSimulating.value) {
-        addLog('正在停止模拟进程...')
+        addLog('진행 중: 중지시뮬레이션프로세스...')
         try {
           await stopSimulation({ simulation_id: currentSimulationId.value })
-          addLog('✓ 模拟已停止')
+          addLog('✓ 시뮬레이션이미중지')
         } catch (err) {
-          addLog(`停止模拟失败: ${err.message}`)
+          addLog(`중지시뮬레이션실패: ${err.message}`)
         }
       }
     }
   } catch (err) {
-    addLog(`检查模拟状态失败: ${err.message}`)
+    addLog(`검사 시뮬레이션 상태 실패: ${err.message}`)  
   }
   
-  // 返回到 Step 2 (环境搭建)
+  // 돌아가기 Step 2 (환경 설정)
   router.push({ name: 'Simulation', params: { simulationId: currentSimulationId.value } })
 }
 
 const handleNextStep = () => {
-  // Step3Simulation 组件会直接处理报告生成和路由跳转
-  // 这个方法仅作为备用
-  addLog('进入 Step 4: 报告生成')
+  // Step3 Simulation 컴포넌트 직접 처리 보고서 생성과 라우팅 이동  
+  // 이 메서드만 작로 비상용  
+  addLog('진입 Step 4: 보고서 생성')
 }
 
 // --- Data Logic ---
 const loadSimulationData = async () => {
   try {
-    addLog(`加载模拟数据: ${currentSimulationId.value}`)
+    addLog(`로드시뮬레이션데이터: ${currentSimulationId.value}`)
     
-    // 获取 simulation 信息
+    // 가져오기 simulation 정보
     const simRes = await getSimulation(currentSimulationId.value)
     if (simRes.success && simRes.data) {
       const simData = simRes.data
       
-      // 获取 simulation config 以获取 minutes_per_round
+      // 가져오기 simulation config 하여가져오기 minutes_per_round
       try {
         const configRes = await getSimulationConfig(currentSimulationId.value)
         if (configRes.success && configRes.data?.time_config?.minutes_per_round) {
           minutesPerRound.value = configRes.data.time_config.minutes_per_round
-          addLog(`时间配置: 每轮 ${minutesPerRound.value} 分钟`)
+          addLog(`시간 설정: 매 라운드 ${minutesPerRound.value} 분`)  
         }
       } catch (configErr) {
-        addLog(`获取时间配置失败，使用默认值: ${minutesPerRound.value}分钟/轮`)
+        addLog(`가져오기 시간 설정 실패，사용 기본값 값: ${minutesPerRound.value}분/라운드`)  
       }
       
-      // 获取 project 信息
+      // 가져오기 project 정보
       if (simData.project_id) {
         const projRes = await getProject(simData.project_id)
         if (projRes.success && projRes.data) {
           projectData.value = projRes.data
-          addLog(`项目加载成功: ${projRes.data.project_id}`)
+          addLog(`프로젝트로드 성공: ${projRes.data.project_id}`)
           
-          // 获取 graph 数据
+          // 가져오기 graph 데이터
           if (projRes.data.graph_id) {
             await loadGraph(projRes.data.graph_id)
           }
         }
       }
     } else {
-      addLog(`加载模拟数据失败: ${simRes.error || '未知错误'}`)
+      addLog(`로드시뮬레이션데이터실패: ${simRes.error || '알 수 없음오류'}`)
     }
   } catch (err) {
-    addLog(`加载异常: ${err.message}`)
+    addLog(`로드예외: ${err.message}`)
   }
 }
 
 const loadGraph = async (graphId) => {
-  // 当正在模拟时，自动刷新不显示全屏 loading，以免闪烁
-  // 手动刷新或初始加载时显示 loading
+  // 진행 중: 시뮬레이션 시，자동 새로 고침 안 표시 전체 화면 loading，하여 면 플래시  
+  // 수동 새로 고침 또는 초기 로드 시 표시 loading  
   if (!isSimulating.value) {
     graphLoading.value = true
   }
@@ -252,11 +252,11 @@ const loadGraph = async (graphId) => {
     if (res.success) {
       graphData.value = res.data
       if (!isSimulating.value) {
-        addLog('图谱数据加载成功')
+        addLog('그래프데이터로드 성공')
       }
     }
   } catch (err) {
-    addLog(`图谱加载失败: ${err.message}`)
+    addLog(`그래프로드 실패: ${err.message}`)
   } finally {
     graphLoading.value = false
   }
@@ -273,8 +273,8 @@ let graphRefreshTimer = null
 
 const startGraphRefresh = () => {
   if (graphRefreshTimer) return
-  addLog('开启图谱实时刷新 (30s)')
-  // 立即刷新一次，然后每30秒刷新
+  addLog('그래프 실시간 새로 고침 시작 (30초)')
+  // 즉시 새로 고침 한번，그 다음 매 30초 새로 고침  
   graphRefreshTimer = setInterval(refreshGraph, 30000)
 }
 
@@ -282,7 +282,7 @@ const stopGraphRefresh = () => {
   if (graphRefreshTimer) {
     clearInterval(graphRefreshTimer)
     graphRefreshTimer = null
-    addLog('停止图谱实时刷新')
+    addLog('중지그래프실시간새로고침')
   }
 }
 
@@ -295,11 +295,11 @@ watch(isSimulating, (newValue) => {
 }, { immediate: true })
 
 onMounted(() => {
-  addLog('SimulationRunView 初始化')
+  addLog('SimulationRunView 초기화')
   
-  // 记录 maxRounds 配置（值已在初始化时从 query 参数获取）
+  // 기록 maxRounds 설정（값 이미 초기화 시부터 query 파라미터 가져오기）
   if (maxRounds.value) {
-    addLog(`自定义模拟轮数: ${maxRounds.value}`)
+    addLog(`사용자 정의시뮬레이션라운드 수: ${maxRounds.value}`)
   }
   
   loadSimulationData()

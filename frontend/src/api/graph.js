@@ -1,8 +1,8 @@
 import service, { requestWithRetry } from './index'
 
 /**
- * 生成本体（上传文档和模拟需求）
- * @param {Object} data - 包含files, simulation_requirement, project_name等
+ * 생성온톨로지（업로드문서와시뮬레이션 요구사항）
+ * @param {Object} data - 포함files, simulation_requirement, project_name등
  * @returns {Promise}
  */
 export function generateOntology(formData) {
@@ -19,8 +19,8 @@ export function generateOntology(formData) {
 }
 
 /**
- * 构建图谱
- * @param {Object} data - 包含project_id, graph_name等
+ * 구축그래프
+ * @param {Object} data - 포함project_id, graph_name등
  * @returns {Promise}
  */
 export function buildGraph(data) {
@@ -34,8 +34,8 @@ export function buildGraph(data) {
 }
 
 /**
- * 查询任务状态
- * @param {String} taskId - 任务ID
+ * 조회작업상태
+ * @param {String} taskId - 작업ID
  * @returns {Promise}
  */
 export function getTaskStatus(taskId) {
@@ -46,8 +46,8 @@ export function getTaskStatus(taskId) {
 }
 
 /**
- * 获取图谱数据
- * @param {String} graphId - 图谱ID
+ * 가져오기그래프데이터
+ * @param {String} graphId - 그래프ID
  * @returns {Promise}
  */
 export function getGraphData(graphId) {
@@ -58,8 +58,8 @@ export function getGraphData(graphId) {
 }
 
 /**
- * 获取项目信息
- * @param {String} projectId - 项目ID
+ * 가져오기프로젝트 정보
+ * @param {String} projectId - 프로젝트 ID
  * @returns {Promise}
  */
 export function getProject(projectId) {

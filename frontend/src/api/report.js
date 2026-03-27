@@ -1,7 +1,7 @@
 import service, { requestWithRetry } from './index'
 
 /**
- * 开始报告生成
+ * 시작보고서 생성
  * @param {Object} data - { simulation_id, force_regenerate? }
  */
 export const generateReport = (data) => {
@@ -9,7 +9,7 @@ export const generateReport = (data) => {
 }
 
 /**
- * 获取报告生成状态
+ * 가져오기보고서 생성상태
  * @param {string} reportId
  */
 export const getReportStatus = (reportId) => {
@@ -17,25 +17,25 @@ export const getReportStatus = (reportId) => {
 }
 
 /**
- * 获取 Agent 日志（增量）
+ * 가져오기 Agent 로그（증분）  
  * @param {string} reportId
- * @param {number} fromLine - 从第几行开始获取
+ * @param {number} fromLine - 몇 번째 줄부터시작가져오기
  */
 export const getAgentLog = (reportId, fromLine = 0) => {
   return service.get(`/api/report/${reportId}/agent-log`, { params: { from_line: fromLine } })
 }
 
 /**
- * 获取控制台日志（增量）
+ * 가져오기 콘솔 로그（증분）
  * @param {string} reportId
- * @param {number} fromLine - 从第几行开始获取
+ * @param {number} fromLine - 몇 번째 줄부터시작가져오기
  */
 export const getConsoleLog = (reportId, fromLine = 0) => {
   return service.get(`/api/report/${reportId}/console-log`, { params: { from_line: fromLine } })
 }
 
 /**
- * 获取报告详情
+ * 가져오기보고서상세
  * @param {string} reportId
  */
 export const getReport = (reportId) => {
@@ -43,7 +43,7 @@ export const getReport = (reportId) => {
 }
 
 /**
- * 与 Report Agent 对话
+ * 와 Report Agent 대화
  * @param {Object} data - { simulation_id, message, chat_history? }
  */
 export const chatWithReport = (data) => {
