@@ -338,6 +338,7 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
             logger.info(f"시뮬레이션 {simulation_id} 감지결과: 이미준비 완료 (status={status}, config_generated={config_generated})")
             return True, {
                 "status": status,
+                "simulation_mode": state_data.get("simulation_mode", "social_media"),
                 "entities_count": state_data.get("entities_count", 0),
                 "profiles_count": profiles_count,
                 "entity_types": state_data.get("entity_types", []),
@@ -692,11 +693,21 @@ def get_prepare_status():
         # 만약없으면task_id, 돌아가기오류
         if not task_id:
             if simulation_id:
-                # simulation_id가 있지만 준비가 완료되지 않음
+                # simulation_id가 있지만 준비가 완료되지 않음 — state에서 mode 읽기
+                sim_mode = "social_media"
+                try:
+                    state_path = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id, "state.json")
+                    if os.path.exists(state_path):
+                        import json as _json
+                        with open(state_path, 'r') as _f:
+                            sim_mode = _json.load(_f).get("simulation_mode", "social_media")
+                except Exception:
+                    pass
                 return jsonify({
                     "success": True,
                     "data": {
                         "simulation_id": simulation_id,
+                        "simulation_mode": sim_mode,
                         "status": "not_started",
                         "progress": 0,
                         "message": "아직 준비가 시작되지 않았습니다, /api/simulation/prepare 호출하여 시작하세요",
