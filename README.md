@@ -48,11 +48,3 @@ ZEP_API_KEY=본인_Zep_키
 ```
 
 > 나머지 설정(`FLASK_DEBUG`, `SECRET_KEY` 등)은 기본값이 있어서 안 넣어도 됨.
-
-## Contributors
-
-<table>
-  <tr>
-    <td align="center"><b>여해인</b><br/>프로젝트 리드</td>
-  </tr>
-</table>
