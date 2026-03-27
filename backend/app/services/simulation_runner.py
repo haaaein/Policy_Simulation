@@ -384,7 +384,11 @@ class SimulationRunner:
             cls._graph_memory_enabled[simulation_id] = False
         
         # 어떤 스크립트를 실행할지 확인 (스크립트는 backend/scripts/ 디렉토리에 위치)
-        if platform == "twitter":
+        if platform == "stakeholder_meeting":
+            script_name = "run_stakeholder_meeting.py"
+            state.twitter_running = True  # 포럼 역할로 재활용
+            state.reddit_running = False
+        elif platform == "twitter":
             script_name = "run_twitter_simulation.py"
             state.twitter_running = True
         elif platform == "reddit":

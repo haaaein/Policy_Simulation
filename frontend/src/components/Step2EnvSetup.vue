@@ -17,8 +17,33 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/create</p>
           <p class="description">
-            새로 생성simulation인스턴스，가져오기시뮬레이션월드파라미터템플릿
+            시뮬레이션 모드를 선택하고 인스턴스를 초기화합니다
           </p>
+
+          <!-- 시뮬레이션 모드 선택 -->
+          <div class="mode-selector" v-if="!simulationId">
+            <div
+              class="mode-card"
+              :class="{ selected: simulationMode === 'social_media' }"
+              @click="simulationMode = 'social_media'"
+            >
+              <span class="mode-icon">📱</span>
+              <span class="mode-title">소셜 미디어</span>
+              <span class="mode-desc">Twitter/Reddit 듀얼 플랫폼 여론 시뮬레이션</span>
+            </div>
+            <div
+              class="mode-card"
+              :class="{ selected: simulationMode === 'stakeholder_meeting' }"
+              @click="simulationMode = 'stakeholder_meeting'"
+            >
+              <span class="mode-icon">🏛️</span>
+              <span class="mode-title">이해관계자 회의</span>
+              <span class="mode-desc">정책 이해관계자 전원 참석 토론 시뮬레이션</span>
+            </div>
+          </div>
+          <div v-if="simulationId" class="mode-badge">
+            모드: {{ simulationMode === 'stakeholder_meeting' ? '🏛️ 이해관계자 회의' : '📱 소셜 미디어' }}
+          </div>
 
           <div v-if="simulationId" class="info-card">
             <div class="info-row">
@@ -668,9 +693,12 @@ let lastLoggedMessage = ''
 let lastLoggedProfileCount = 0
 let lastLoggedConfigStage = ''
 
+// 시뮬레이션 모드 선택
+const simulationMode = ref('social_media')  // 'social_media' 또는 'stakeholder_meeting'
+
 // 시뮬레이션라운드 수설정
-const useCustomRounds = ref(false) // 기본값사용자동설정라운드 수
-const customMaxRounds = ref(40)   // 기본값 추천 40 라운드
+const useCustomRounds = ref(false)
+const customMaxRounds = ref(40)
 
 // Watch stage to update phase
 watch(currentStage, (newStage) => {
@@ -783,7 +811,8 @@ const startPrepareSimulation = async () => {
     const res = await prepareSimulation({
       simulation_id: props.simulationId,
       use_llm_for_profiles: true,
-      parallel_profile_count: 5
+      parallel_profile_count: 5,
+      simulation_mode: simulationMode.value
     })
     
     if (res.success && res.data) {
@@ -1174,6 +1203,57 @@ onUnmounted(() => {
   color: #666;
   line-height: 1.5;
   margin-bottom: 16px;
+}
+
+/* 시뮬레이션 모드 선택 */
+.mode-selector {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+.mode-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+.mode-card:hover {
+  border-color: #999;
+  background: #f5f5f5;
+}
+.mode-card.selected {
+  border-color: #000;
+  background: #fff;
+}
+.mode-icon {
+  font-size: 24px;
+}
+.mode-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+}
+.mode-desc {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+  line-height: 1.4;
+}
+.mode-badge {
+  font-size: 12px;
+  color: #333;
+  background: #f0f0f0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  display: inline-block;
 }
 
 /* Action Section */

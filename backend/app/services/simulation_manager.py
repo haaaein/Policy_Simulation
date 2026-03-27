@@ -46,6 +46,9 @@ class SimulationState:
     project_id: str
     graph_id: str
     
+    # 시뮬레이션 모드: "social_media" 또는 "stakeholder_meeting"
+    simulation_mode: str = "social_media"
+
     # 플랫폼활성화상태
     enable_twitter: bool = True
     enable_reddit: bool = True
@@ -196,26 +199,34 @@ class SimulationManager:
         graph_id: str,
         enable_twitter: bool = True,
         enable_reddit: bool = True,
+        simulation_mode: str = "social_media",
     ) -> SimulationState:
         """
-        생성 새로운 시뮬레이션
-        
+        새로운 시뮬레이션 생성
+
         Args:
             project_id: 프로젝트 ID
-            graph_id: Zep그래프ID
-            enable_twitter: 아니오 활성화 Twitter 시뮬레이션
-            enable_reddit: 아니오 활성화 Reddit 시뮬레이션
-            
+            graph_id: Zep 그래프 ID
+            enable_twitter: Twitter 시뮬레이션 활성화 여부
+            enable_reddit: Reddit 시뮬레이션 활성화 여부
+            simulation_mode: "social_media" 또는 "stakeholder_meeting"
+
         Returns:
             SimulationState
         """
         import uuid
         simulation_id = f"sim_{uuid.uuid4().hex[:12]}"
-        
+
+        # 이해관계자 회의 모드: 단일 플랫폼(포럼)만 사용
+        if simulation_mode == "stakeholder_meeting":
+            enable_twitter = True   # 포럼 역할
+            enable_reddit = False   # 미사용
+
         state = SimulationState(
             simulation_id=simulation_id,
             project_id=project_id,
             graph_id=graph_id,
+            simulation_mode=simulation_mode,
             enable_twitter=enable_twitter,
             enable_reddit=enable_reddit,
             status=SimulationStatus.CREATED,

@@ -214,12 +214,15 @@ def create_simulation():
                 "error": "프로젝트가 아직 그래프를 구축하지 않았습니다, 먼저 /api/graph/build를 호출하세요"
             }), 400
         
+        simulation_mode = data.get('simulation_mode', 'social_media')
+
         manager = SimulationManager()
         state = manager.create_simulation(
             project_id=project_id,
             graph_id=graph_id,
             enable_twitter=data.get('enable_twitter', True),
             enable_reddit=data.get('enable_reddit', True),
+            simulation_mode=simulation_mode,
         )
         
         return jsonify({
@@ -1495,9 +1498,17 @@ def start_simulation():
             }), 400
 
         platform = data.get('platform', 'parallel')
-        max_rounds = data.get('max_rounds')  # 선택：최대시뮬레이션라운드 수
-        enable_graph_memory_update = data.get('enable_graph_memory_update', False)  # 선택：비활성화된 그래프 기억 업데이트
-        force = data.get('force', False)  # 선택：강제로 다시 시작
+        max_rounds = data.get('max_rounds')
+        enable_graph_memory_update = data.get('enable_graph_memory_update', False)
+        force = data.get('force', False)
+
+        # 시뮬레이션 모드에 따라 platform 자동 결정
+        manager = SimulationManager()
+        sim_state = manager.get_simulation_state(simulation_id)
+        if sim_state and sim_state.simulation_mode == "stakeholder_meeting":
+            platform = "stakeholder_meeting"
+            if max_rounds is None:
+                max_rounds = 8  # 회의 기본 8라운드
 
         # 검증 max_rounds 파라미터
         if max_rounds is not None:
@@ -1514,10 +1525,10 @@ def start_simulation():
                     "error": "max_rounds는 반드시 유효한 정수여야 합니다"
                 }), 400
 
-        if platform not in ['twitter', 'reddit', 'parallel']:
+        if platform not in ['twitter', 'reddit', 'parallel', 'stakeholder_meeting']:
             return jsonify({
                 "success": False,
-                "error": f"유효하지 않은 플랫폼 유형: {platform}, 선택: twitter/reddit/parallel"
+                "error": f"유효하지 않은 플랫폼 유형: {platform}, 선택: twitter/reddit/parallel/stakeholder_meeting"
             }), 400
 
         # 시뮬레이션이 이미 준비되었는지 확인

@@ -249,6 +249,7 @@ class SimulationConfigGenerator:
         entities: List[EntityNode],
         enable_twitter: bool = True,
         enable_reddit: bool = True,
+        simulation_mode: str = "social_media",
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> SimulationParameters:
         """
@@ -294,8 +295,23 @@ class SimulationConfigGenerator:
         # ========== 단계 1: 생성 시간 설정 ==========
         report_progress(1, "생성시간설정...")
         num_entities = len(entities)
-        time_config_result = self._generate_time_config(context, num_entities)
-        time_config = self._parse_time_config(time_config_result, num_entities)
+        if simulation_mode == "stakeholder_meeting":
+            # 회의 모드: 짧은 라운드, 전원 활성화
+            time_config_result = {
+                "total_simulation_hours": 4,   # 4시간 회의
+                "minutes_per_round": 30,       # 30분당 1라운드
+                "agents_per_hour_min": num_entities,  # 전원 활성화
+                "agents_per_hour_max": num_entities,
+                "peak_hours": list(range(0, 24)),      # 모든 시간이 활성
+                "peak_activity_multiplier": 1.0,
+                "off_peak_hours": [],
+                "off_peak_activity_multiplier": 1.0,
+                "reasoning": "이해관계자 회의 모드: 전원 참석, 8라운드"
+            }
+            time_config = self._parse_time_config(time_config_result, num_entities)
+        else:
+            time_config_result = self._generate_time_config(context, num_entities)
+            time_config = self._parse_time_config(time_config_result, num_entities)
         reasoning_parts.append(f"시간설정: {time_config_result.get('reasoning', '성공')}")
         
         # ========== 단계 2: 생성 이벤트 설정 ==========
