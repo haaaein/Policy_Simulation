@@ -45,12 +45,9 @@ LLM_API_KEY=팀_슬랙에서_공유된_키
 LLM_BASE_URL=https://bridge.luxiacloud.com/llm/openai
 LLM_MODEL_NAME=gpt-4o-mini
 ZEP_API_KEY=본인_Zep_키
-FLASK_DEBUG=True
-SECRET_KEY=아무거나
-OASIS_DEFAULT_MAX_ROUNDS=10
 ```
 
-> `SECRET_KEY`는 Flask 세션용이라 아무 문자열이나 OK. 외부 API 키 아님.
+> 나머지 설정(`FLASK_DEBUG`, `SECRET_KEY` 등)은 기본값이 있어서 안 넣어도 됨.
 
 ## Contributors
 
