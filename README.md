@@ -1,203 +1,166 @@
-<div align="center">
+# PolicySim — Evidence-Grounded Policy Simulation
 
-<img src="./static/image/MiroFish_logo_compressed.jpeg" alt="MiroFish Logo" width="75%"/>
+> 정책 문서를 업로드하면, 이해관계자별 에이전트가 파급효과를 시뮬레이션합니다.
 
-<a href="https://trendshift.io/repositories/16144" target="_blank"><img src="https://trendshift.io/api/badge/repositories/16144" alt="666ghj%2FMiroFish | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+PDF 기반 정책 문서에서 **지식 그래프**를 자동 구축하고, 이해관계자별 에이전트가 다중 시나리오에서 정책 반응을 시뮬레이션합니다. **Critic 모듈**이 과거 정책 성과 데이터와 비교하여 예측을 보정합니다.
 
-简洁通用的群体智能引擎，预测万物
-</br>
-<em>A Simple and Universal Swarm Intelligence Engine, Predicting Anything</em>
+---
 
-<a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2MiroFish | Shanda" height="40"/></a>
+## 개요
 
-[![GitHub Stars](https://img.shields.io/github/stars/666ghj/MiroFish?style=flat-square&color=DAA520)](https://github.com/666ghj/MiroFish/stargazers)
-[![GitHub Watchers](https://img.shields.io/github/watchers/666ghj/MiroFish?style=flat-square)](https://github.com/666ghj/MiroFish/watchers)
-[![GitHub Forks](https://img.shields.io/github/forks/666ghj/MiroFish?style=flat-square)](https://github.com/666ghj/MiroFish/network)
-[![Docker](https://img.shields.io/badge/Docker-Build-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/666ghj/MiroFish)
+PolicySim은 [MiroFish](https://github.com/666ghj/MiroFish) 오픈소스 프로젝트를 기반으로, **한국 정책 파급효과 분석**에 특화되도록 커스터마이징한 시뮬레이션 도구입니다.
 
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/ePf5aPaHnA)
-[![X](https://img.shields.io/badge/X-Follow-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/mirofish_ai)
-[![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=flat-square&logo=instagram&logoColor=white)](https://www.instagram.com/mirofish_ai/)
+### 핵심 기능
 
-[English](./README-EN.md) | [中文文档](./README.md)
+- **정책 온톨로지 자동 추출**: PDF 문서에서 이해관계자, 예산, 평가 체계, 제약 조건을 자동으로 구조화
+- **지식 그래프 기반 에이전트 생성**: 추출된 엔티티로부터 이해관계자 페르소나를 자동 생성
+- **다중 시나리오 시뮬레이션**: 에이전트 간 상호작용을 통한 정책 파급 경로 탐색
+- **근거 기반 보고서**: 예측의 근거가 추적 가능한 파급효과 분석 보고서 생성
+- **심층 상호작용**: 시뮬레이션 에이전트와 직접 대화하여 추가 분석
 
-</div>
+### 워크플로
 
-## ⚡ 项目概述
-
-**MiroFish** 是一款基于多智能体技术的新一代 AI 预测引擎。通过提取现实世界的种子信息（如突发新闻、政策草案、金融信号），自动构建出高保真的平行数字世界。在此空间内，成千上万个具备独立人格、长期记忆与行为逻辑的智能体进行自由交互与社会演化。你可透过「上帝视角」动态注入变量，精准推演未来走向——**让未来在数字沙盘中预演，助决策在百战模拟后胜出**。
-
-> 你只需：上传种子材料（数据分析报告或者有趣的小说故事），并用自然语言描述预测需求</br>
-> MiroFish 将返回：一份详尽的预测报告，以及一个可深度交互的高保真数字世界
-
-### 我们的愿景
-
-MiroFish 致力于打造映射现实的群体智能镜像，通过捕捉个体互动引发的群体涌现，突破传统预测的局限：
-
-- **于宏观**：我们是决策者的预演实验室，让政策与公关在零风险中试错
-- **于微观**：我们是个人用户的创意沙盘，无论是推演小说结局还是探索脑洞，皆可有趣、好玩、触手可及
-
-从严肃预测到趣味仿真，我们让每一个如果都能看见结果，让预测万物成为可能。
-
-## 🌐 在线体验
-
-欢迎访问在线 Demo 演示环境，体验我们为你准备的一次关于热点舆情事件的推演预测：[mirofish-live-demo](https://666ghj.github.io/mirofish-demo/)
-
-## 📸 系统截图
-
-<div align="center">
-<table>
-<tr>
-<td><img src="./static/image/Screenshot/运行截图1.png" alt="截图1" width="100%"/></td>
-<td><img src="./static/image/Screenshot/运行截图2.png" alt="截图2" width="100%"/></td>
-</tr>
-<tr>
-<td><img src="./static/image/Screenshot/运行截图3.png" alt="截图3" width="100%"/></td>
-<td><img src="./static/image/Screenshot/运行截图4.png" alt="截图4" width="100%"/></td>
-</tr>
-<tr>
-<td><img src="./static/image/Screenshot/运行截图5.png" alt="截图5" width="100%"/></td>
-<td><img src="./static/image/Screenshot/运行截图6.png" alt="截图6" width="100%"/></td>
-</tr>
-</table>
-</div>
-
-## 🎬 演示视频
-
-### 1. 武汉大学舆情推演预测 + MiroFish项目讲解
-
-<div align="center">
-<a href="https://www.bilibili.com/video/BV1VYBsBHEMY/" target="_blank"><img src="./static/image/武大模拟演示封面.png" alt="MiroFish Demo Video" width="75%"/></a>
-
-点击图片查看使用微舆BettaFish生成的《武大舆情报告》进行预测的完整演示视频
-</div>
-
-### 2. 《红楼梦》失传结局推演预测
-
-<div align="center">
-<a href="https://www.bilibili.com/video/BV1cPk3BBExq" target="_blank"><img src="./static/image/红楼梦模拟推演封面.jpg" alt="MiroFish Demo Video" width="75%"/></a>
-
-点击图片查看基于《红楼梦》前80回数十万字，MiroFish深度预测失传结局
-</div>
-
-> **金融方向推演预测**、**时政要闻推演预测**等示例陆续更新中...
-
-## 🔄 工作流程
-
-1. **图谱构建**：现实种子提取 & 个体与群体记忆注入 & GraphRAG构建
-2. **环境搭建**：实体关系抽取 & 人设生成 & 环境配置Agent注入仿真参数
-3. **开始模拟**：双平台并行模拟 & 自动解析预测需求 & 动态更新时序记忆
-4. **报告生成**：ReportAgent拥有丰富的工具集与模拟后环境进行深度交互
-5. **深度互动**：与模拟世界中的任意一位进行对话 & 与ReportAgent进行对话
-
-## 🚀 快速开始
-
-### 一、源码部署（推荐）
-
-#### 前置要求
-
-| 工具 | 版本要求 | 说明 | 安装检查 |
-|------|---------|------|---------|
-| **Node.js** | 18+ | 前端运行环境，包含 npm | `node -v` |
-| **Python** | ≥3.11, ≤3.12 | 后端运行环境 | `python --version` |
-| **uv** | 最新版 | Python 包管理器 | `uv --version` |
-
-#### 1. 配置环境变量
-
-```bash
-# 复制示例配置文件
-cp .env.example .env
-
-# 编辑 .env 文件，填入必要的 API 密钥
+```
+01 그래프 구축    정책 문서에서 온톨로지 추출 → 이해관계자·예산·제약 관계 그래프 구축
+02 환경 설정      이해관계자별 에이전트 페르소나 생성 → 시나리오 파라미터 설정
+03 시뮬레이션     다중 시나리오 병렬 시뮬레이션 → 정책 파급 경로 탐색 → 그래프 실시간 업데이트
+04 보고서 생성    Critic 모듈이 예측 검증 → 근거 추적 가능한 파급효과 분석 보고서 생성
+05 심층 상호작용  시나리오별 비교 → 반사실적 질의 → 이해관계자 에이전트와 직접 대화
 ```
 
-**必需的环境变量：**
+---
+
+## 로컬 환경 설정
+
+### 사전 요구사항
+
+| 항목 | 버전 | 확인 명령어 |
+|---|---|---|
+| Node.js | 20.19+ 또는 22.12+ | `node -v` |
+| Python | 3.10+ | `python3 --version` |
+| pip | 최신 | `pip3 --version` |
+
+### 1. 클론 및 설치
+
+```bash
+git clone https://github.com/haaaein/Policy_Simulation.git
+cd Policy_Simulation
+
+# 프론트엔드 의존성 설치
+cd frontend && npm install && cd ..
+
+# 백엔드 의존성 설치
+cd backend && pip3 install -r requirements.txt && cd ..
+```
+
+### 2. 환경 변수 설정
+
+```bash
+cp .env.example .env
+```
+
+`.env` 파일을 편집하여 API 키를 입력합니다:
 
 ```env
-# LLM API配置（支持 OpenAI SDK 格式的任意 LLM API）
-# 推荐使用阿里百炼平台qwen-plus模型：https://bailian.console.aliyun.com/
-# 注意消耗较大，可先进行小于40轮的模拟尝试
-LLM_API_KEY=your_api_key
-LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-LLM_MODEL_NAME=qwen-plus
+# LLM 설정 — OpenAI 호환 API
+LLM_API_KEY=your_llm_api_key
+LLM_BASE_URL=https://bridge.luxiacloud.com/llm/openai
+LLM_MODEL_NAME=gpt-4o-mini
 
-# Zep Cloud 配置
-# 每月免费额度即可支撑简单使用：https://app.getzep.com/
+# Zep 설정 — https://www.getzep.com/ 에서 무료 발급
 ZEP_API_KEY=your_zep_api_key
+
+# Flask
+FLASK_DEBUG=True
+SECRET_KEY=your-secret-key
+OASIS_DEFAULT_MAX_ROUNDS=10
 ```
 
-#### 2. 安装依赖
+### 3. 실행
+
+터미널 2개를 열어서 각각 실행합니다:
 
 ```bash
-# 一键安装所有依赖（根目录 + 前端 + 后端）
-npm run setup:all
+# 터미널 1: 백엔드
+cd backend && python3 run.py
+
+# 터미널 2: 프론트엔드
+cd frontend && npm run dev -- --host
 ```
 
-或者分步安装：
+브라우저에서 **http://localhost:3000** 으로 접속합니다.
 
-```bash
-# 安装 Node 依赖（根目录 + 前端）
-npm run setup
+---
 
-# 安装 Python 依赖（后端，自动创建虚拟环境）
-npm run setup:backend
+## 사용 방법
+
+1. 메인 화면에서 **정책 문서**(PDF, MD, TXT)를 드래그 & 드롭
+2. **시뮬레이션 프롬프트**를 자연어로 입력 (예: "BK21 사업이 지방대학에 미치는 영향 분석")
+3. **분석 시작** 클릭 → 자동으로 온톨로지 추출 → 그래프 구축 → 시뮬레이션 진행
+4. 시뮬레이션 완료 후 **파급효과 분석 보고서** 확인
+5. 에이전트와 **직접 대화**하여 추가 분석
+
+---
+
+## 프로젝트 구조
+
+```
+Policy_Simulation/
+├── frontend/                    # Vue 3 프론트엔드
+│   ├── src/views/              # 페이지 (Home, Process, MainView 등)
+│   ├── src/components/         # 단계별 컴포넌트 (Step1~5, GraphPanel 등)
+│   └── src/api/                # API 호출 모듈
+├── backend/                     # Flask 백엔드
+│   ├── app/api/                # API 라우트 (graph, simulation, report)
+│   ├── app/services/           # 핵심 서비스
+│   │   ├── ontology_generator.py    # 정책 온톨로지 자동 생성
+│   │   ├── graph_builder.py         # Zep 기반 지식 그래프 구축
+│   │   ├── oasis_profile_generator.py # 이해관계자 에이전트 페르소나 생성
+│   │   ├── simulation_runner.py     # OASIS 멀티에이전트 시뮬레이션
+│   │   ├── report_agent.py          # 파급효과 분석 보고서 생성
+│   │   └── zep_tools.py             # 그래프 검색 도구 (InsightForge, Panorama)
+│   └── scripts/                # 시뮬레이션 실행 스크립트
+├── .env.example                 # 환경 변수 템플릿
+└── README.md                    # 이 파일
 ```
 
-#### 3. 启动服务
+---
 
-```bash
-# 同时启动前后端（在项目根目录执行）
-npm run dev
-```
+## 기술 스택
 
-**服务地址：**
-- 前端：`http://localhost:3000`
-- 后端 API：`http://localhost:5001`
+| 영역 | 기술 |
+|---|---|
+| 프론트엔드 | Vue 3, Vite, D3.js |
+| 백엔드 | Flask, Python 3.10+ |
+| LLM | OpenAI 호환 API (GPT-4o-mini) |
+| 그래프 | Zep Cloud (GraphRAG) |
+| 시뮬레이션 | OASIS (camel-ai 기반 멀티에이전트) |
 
-**单独启动：**
+---
 
-```bash
-npm run backend   # 仅启动后端
-npm run frontend  # 仅启动前端
-```
+## 문제 해결
 
-### 二、Docker 部署
+| 증상 | 해결 |
+|---|---|
+| `Vite requires Node.js 20.19+` | Node.js 최신 LTS로 업그레이드 |
+| `LLM_API_KEY 미설정` | `.env` 파일에 API 키 입력 확인 |
+| 그래프 구축이 느림 | Zep 서버 NER 처리 시간 — 문서 크기에 따라 1~5분 소요 |
+| 프론트엔드 Network Error | 백엔드(포트 5001)가 실행 중인지 확인 |
 
-```bash
-# 1. 配置环境变量（同源码部署）
-cp .env.example .env
+---
 
-# 2. 拉取镜像并启动
-docker compose up -d
-```
+## 감사의 말
 
-默认会读取根目录下的 `.env`，并映射端口 `3000（前端）/5001（后端）`
+- 시뮬레이션 엔진: **[MiroFish](https://github.com/666ghj/MiroFish)** — 멀티에이전트 시뮬레이션 프레임워크
+- 에이전트 프레임워크: **[OASIS](https://github.com/camel-ai/oasis)** by CAMEL-AI
+- 그래프 메모리: **[Zep](https://www.getzep.com/)**
 
-> 在 `docker-compose.yml` 中已通过注释提供加速镜像地址，可按需替换
+---
 
-## 📬 更多交流
+## Contributors
 
-<div align="center">
-<img src="./static/image/QQ群.png" alt="QQ交流群" width="60%"/>
-</div>
-
-&nbsp;
-
-MiroFish团队长期招募全职/实习，如果你对多Agent应用感兴趣，欢迎投递简历至：**mirofish@shanda.com**
-
-## 📄 致谢
-
-**MiroFish 得到了盛大集团的战略支持和孵化！**
-
-MiroFish 的仿真引擎由 **[OASIS](https://github.com/camel-ai/oasis)** 驱动，我们衷心感谢 CAMEL-AI 团队的开源贡献！
-
-## 📈 项目统计
-
-<a href="https://www.star-history.com/#666ghj/MiroFish&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
- </picture>
-</a>
+<table>
+  <tr>
+    <td align="center"><b>여해인</b><br/>프로젝트 리드</td>
+  </tr>
+</table>
