@@ -39,7 +39,7 @@
         <div class="hero-right">
           <!-- 로고 영역 -->
           <div class="logo-container">
-            <img src="../assets/logo/PolicySim_logo_left.jpeg" alt="PolicySim Logo" class="hero-logo" />
+            <span class="hero-emoji">🏛️</span>
           </div>
           
           <button class="scroll-down-btn" @click="scrollToBottom">
@@ -511,8 +511,13 @@ const startSimulation = () => {
 }
 
 .hero-logo {
-  max-width: 500px; /* 로고 크기 조정 */
+  max-width: 500px;
   width: 100%;
+}
+
+.hero-emoji {
+  font-size: 180px;
+  line-height: 1;
 }
 
 .scroll-down-btn {
