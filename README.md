@@ -8,7 +8,7 @@
 
 - **Node.js** 20.19+ (`node -v`)
 - **Python** 3.10+ (`python3 --version`)
-- **LLM API Key** — LuxiaCloud Bridge (팀 슬랙에서 공유)
+- **LLM API Key** — [LuxiaCloud Bridge](https://www.luxiacloud.com/) API 키
 - **Zep API Key** — https://www.getzep.com/ 에서 무료 발급
 
 ### 설치
@@ -41,7 +41,7 @@ http://localhost:3000 접속.
 ## .env 설정
 
 ```env
-LLM_API_KEY=팀_슬랙에서_공유된_키
+LLM_API_KEY=Luxia_API_키
 LLM_BASE_URL=https://bridge.luxiacloud.com/llm/openai
 LLM_MODEL_NAME=gpt-4o-mini
 ZEP_API_KEY=본인_Zep_키
