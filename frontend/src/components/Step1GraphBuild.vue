@@ -156,10 +156,32 @@
         </div>
         
         <div class="card-content">
-          <p class="api-note">POST /api/simulation/create</p>
-          <p class="description">그래프 구축완료，다음으로 진행해 주세요다음 단계진행시뮬레이션환경 설정</p>
-          <button 
-            class="action-btn" 
+          <p class="description">그래프 구축이 완료되었습니다. 시뮬레이션 모드를 선택한 후 환경 설정으로 이동하세요.</p>
+
+          <!-- 시뮬레이션 모드 선택 -->
+          <div class="mode-selector" v-if="currentPhase >= 2">
+            <div
+              class="mode-card"
+              :class="{ selected: selectedMode === 'social_media' }"
+              @click="selectedMode = 'social_media'"
+            >
+              <span class="mode-icon">📱</span>
+              <span class="mode-title">소셜 미디어</span>
+              <span class="mode-desc">Twitter/Reddit 듀얼 플랫폼 여론 시뮬레이션</span>
+            </div>
+            <div
+              class="mode-card"
+              :class="{ selected: selectedMode === 'stakeholder_meeting' }"
+              @click="selectedMode = 'stakeholder_meeting'"
+            >
+              <span class="mode-icon">🏛️</span>
+              <span class="mode-title">이해관계자 회의</span>
+              <span class="mode-desc">정책 이해관계자 전원 참석 토론 시뮬레이션</span>
+            </div>
+          </div>
+
+          <button
+            class="action-btn"
             :disabled="currentPhase < 2 || creatingSimulation"
             @click="handleEnterEnvSetup"
           >
@@ -207,6 +229,7 @@ defineEmits(['next-step'])
 const selectedOntologyItem = ref(null)
 const logContent = ref(null)
 const creatingSimulation = ref(false)
+const selectedMode = ref('social_media')  // 'social_media' 또는 'stakeholder_meeting'
 
 // 환경 설정으로 이동 - 생성 시뮬레이션 이동
 const handleEnterEnvSetup = async () => {
@@ -222,7 +245,8 @@ const handleEnterEnvSetup = async () => {
       project_id: props.projectData.project_id,
       graph_id: props.projectData.graph_id,
       enable_twitter: true,
-      enable_reddit: true
+      enable_reddit: selectedMode.value === 'social_media',
+      simulation_mode: selectedMode.value
     })
     
     if (res.success && res.data?.simulation_id) {
@@ -596,6 +620,48 @@ watch(() => props.systemLogs.length, () => {
   text-transform: uppercase;
   margin-top: 4px;
   display: block;
+}
+
+/* 시뮬레이션 모드 선택 */
+.mode-selector {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+.mode-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+.mode-card:hover {
+  border-color: #999;
+  background: #f5f5f5;
+}
+.mode-card.selected {
+  border-color: #000;
+  background: #fff;
+}
+.mode-icon {
+  font-size: 24px;
+}
+.mode-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+}
+.mode-desc {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* Step 03 Button */
