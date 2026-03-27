@@ -26,7 +26,7 @@
           
           <div class="hero-desc">
             <p>
-              PDF 기반 정책 문서에서 <span class="highlight-bold">지식 그래프</span>를 자동 구축하고, 이해관계자별 <span class="highlight-orange">에이전트</span>가 다중 시나리오에서 정책 반응을 시뮬레이션합니다. <span class="highlight-code">“局部最优解”</span>
+              PDF 기반 정책 문서에서 <span class=”highlight-bold”>지식 그래프</span>를 자동 구축하고, 이해관계자별 <span class=”highlight-orange”>에이전트</span>가 다중 시나리오에서 정책 반응을 시뮬레이션합니다. <span class=”highlight-code”>Critic 모듈</span>이 과거 정책 성과 데이터와 비교하여 예측을 보정합니다.
             </p>
             <p class="slogan-text">
               구조화된 근거 → 시나리오별 비교 → 반사실적 분석<span class="blinking-cursor">_</span>
