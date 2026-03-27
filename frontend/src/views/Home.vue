@@ -1,17 +1,17 @@
 <template>
   <div class="home-container">
-    <!-- 顶部导航栏 -->
+    <!-- 상단 내비게이션 -->
     <nav class="navbar">
       <div class="nav-brand">PolicySim</div>
       <div class="nav-links">
-        <a href="https://github.com/666ghj/MiroFish" target="_blank" class="github-link">
+        <a href="https://github.com/666ghj/PolicySim" target="_blank" class="github-link">
           GitHub <span class="arrow">↗</span>
         </a>
       </div>
     </nav>
 
     <div class="main-content">
-      <!-- 上半部分：Hero 区域 -->
+      <!-- 상단: Hero 영역 -->
       <section class="hero-section">
         <div class="hero-left">
           <div class="tag-row">
@@ -37,9 +37,9 @@
         </div>
         
         <div class="hero-right">
-          <!-- Logo 区域 -->
+          <!-- 로고 영역 -->
           <div class="logo-container">
-            <img src="../assets/logo/MiroFish_logo_left.jpeg" alt="PolicySim Logo" class="hero-logo" />
+            <img src="../assets/logo/PolicySim_logo_left.jpeg" alt="PolicySim Logo" class="hero-logo" />
           </div>
           
           <button class="scroll-down-btn" @click="scrollToBottom">
@@ -48,9 +48,9 @@
         </div>
       </section>
 
-      <!-- 下半部分：双栏布局 -->
+      <!-- 하단: 분할 화면 레이아웃 -->
       <section class="dashboard-section">
-        <!-- 左栏：状态与步骤 -->
+        <!-- 좌측: 상태 및 단계 -->
         <div class="left-panel">
           <div class="panel-header">
             <span class="status-dot">■</span> 시스템 상태
@@ -61,7 +61,7 @@
             정책 문서(PDF, MD, TXT)를 업로드하면 자동으로 온톨로지를 추출하고 시뮬레이션을 시작합니다
           </p>
           
-          <!-- 数据指标卡片 -->
+          <!-- 데이터 지표 카드 -->
           <div class="metrics-row">
             <div class="metric-card">
               <div class="metric-value">근거 기반</div>
@@ -73,7 +73,7 @@
             </div>
           </div>
 
-          <!-- 项目模拟步骤介绍 (新增区域) -->
+          <!-- 프로젝트 시뮬레이션 단계 소개  -->
           <div class="steps-container">
             <div class="steps-header">
                <span class="diamond-icon">◇</span> 워크플로 시퀀스
@@ -118,10 +118,10 @@
           </div>
         </div>
 
-        <!-- 右栏：交互控制台 -->
+        <!-- 우측: 인터랙티브 콘솔 -->
         <div class="right-panel">
           <div class="console-box">
-            <!-- 上传区域 -->
+            <!-- 업로드 영역 -->
             <div class="console-section">
               <div class="console-header">
                 <span class="console-label">01 / 정책 문서</span>
@@ -162,12 +162,12 @@
               </div>
             </div>
 
-            <!-- 分割线 -->
+            <!-- 구분선 -->
             <div class="console-divider">
               <span>입력 파라미터</span>
             </div>
 
-            <!-- 输入区域 -->
+            <!-- 입력 영역 -->
             <div class="console-section">
               <div class="console-header">
                 <span class="console-label">>_ 02 / 시뮬레이션 프롬프트</span>
@@ -176,15 +176,15 @@
                 <textarea
                   v-model="formData.simulationRequirement"
                   class="code-input"
-                  placeholder="// 用自然语言输入模拟或预测需求（例.武大若发布撤销肖某处分的公告，会引发什么舆情走向）"
+                  placeholder="// 자연어로 시뮬레이션 또는 예측 요구를 입력하세요 (예: BK21 정책이 지방대학에 미치는 파급효과)"
                   rows="6"
                   :disabled="loading"
                 ></textarea>
-                <div class="model-badge">引擎: MiroFish-V1.0</div>
+                <div class="model-badge">엔진: PolicySim-V1.0</div>
               </div>
             </div>
 
-            <!-- 启动按钮 -->
+            <!-- 분석 시작 버튼 -->
             <div class="console-section btn-section">
               <button 
                 class="start-engine-btn"
@@ -192,7 +192,7 @@
                 :disabled="!canSubmit || loading"
               >
                 <span v-if="!loading">분석 시작</span>
-                <span v-else>初始化中...</span>
+                <span v-else>초기화 중...</span>
                 <span class="btn-arrow">→</span>
               </button>
             </div>
@@ -200,7 +200,7 @@
         </div>
       </section>
 
-      <!-- 历史项目数据库 -->
+      <!-- 히스토리 데이터베이스 -->
       <HistoryDatabase />
     </div>
   </div>
@@ -213,41 +213,41 @@ import HistoryDatabase from '../components/HistoryDatabase.vue'
 
 const router = useRouter()
 
-// 表单数据
+// 폼 데이터
 const formData = ref({
   simulationRequirement: ''
 })
 
-// 文件列表
+// 파일 목록
 const files = ref([])
 
-// 状态
+// 상태
 const loading = ref(false)
 const error = ref('')
 const isDragOver = ref(false)
 
-// 文件输入引用
+// 파일 입력 참조
 const fileInput = ref(null)
 
-// 计算属性:是否可以提交
+// 제출 가능 여부 계산
 const canSubmit = computed(() => {
   return formData.value.simulationRequirement.trim() !== '' && files.value.length > 0
 })
 
-// 触发文件选择
+// 파일 선택 트리거
 const triggerFileInput = () => {
   if (!loading.value) {
     fileInput.value?.click()
   }
 }
 
-// 处理文件选择
+// 파일 선택 처리
 const handleFileSelect = (event) => {
   const selectedFiles = Array.from(event.target.files)
   addFiles(selectedFiles)
 }
 
-// 处理拖拽相关
+// 드래그 관련 처리
 const handleDragOver = (e) => {
   if (!loading.value) {
     isDragOver.value = true
@@ -266,7 +266,7 @@ const handleDrop = (e) => {
   addFiles(droppedFiles)
 }
 
-// 添加文件
+// 파일 추가
 const addFiles = (newFiles) => {
   const validFiles = newFiles.filter(file => {
     const ext = file.name.split('.').pop().toLowerCase()
@@ -275,12 +275,12 @@ const addFiles = (newFiles) => {
   files.value.push(...validFiles)
 }
 
-// 移除文件
+// 파일 제거
 const removeFile = (index) => {
   files.value.splice(index, 1)
 }
 
-// 滚动到底部
+// 하단으로 스크롤
 const scrollToBottom = () => {
   window.scrollTo({
     top: document.body.scrollHeight,
@@ -288,15 +288,15 @@ const scrollToBottom = () => {
   })
 }
 
-// 시뮬레이션 시작 - 立即跳转，API调用在Process页面进行
+// 시뮬레이션 시작 - 즉시 이동, API 호출은 Process 페이지에서 수행
 const startSimulation = () => {
   if (!canSubmit.value || loading.value) return
   
-  // 存储待上传的数据
+  // 업로드 대기 데이터 저장
   import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
     setPendingUpload(files.value, formData.value.simulationRequirement)
     
-    // 立即跳转到Process页面（使用特殊标识表示新建项目）
+    // Process 페이지로 즉시 이동 (신규 프로젝트 표시)
     router.push({
       name: 'Process',
       params: { projectId: 'new' }
@@ -306,7 +306,7 @@ const startSimulation = () => {
 </script>
 
 <style scoped>
-/* 全局变量与重置 */
+/* 글로벌 변수 및 초기화 */
 :root {
   --black: #000000;
   --white: #FFFFFF;
@@ -315,8 +315,8 @@ const startSimulation = () => {
   --gray-text: #666666;
   --border: #E5E5E5;
   /* 
-    使用 Space Grotesk 作为主要标题字体，JetBrains Mono 作为代码/标签字体
-    确保已在 index.html 引入这些 Google Fonts 
+    Space Grotesk: 제목 폰트, JetBrains Mono: 코드/라벨 폰트
+    index.html에서 Google Fonts 로드 필요 
   */
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
@@ -330,7 +330,7 @@ const startSimulation = () => {
   color: var(--black);
 }
 
-/* 顶部导航 */
+/* 상단 내비게이션 */
 .navbar {
   height: 60px;
   background: var(--black);
@@ -373,14 +373,14 @@ const startSimulation = () => {
   font-family: sans-serif;
 }
 
-/* 主要内容区 */
+/* 메인 콘텐츠 영역 */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 60px 40px;
 }
 
-/* Hero 区域 */
+/* Hero 영역 */
 .hero-section {
   display: flex;
   justify-content: space-between;
@@ -511,7 +511,7 @@ const startSimulation = () => {
 }
 
 .hero-logo {
-  max-width: 500px; /* 调整logo大小 */
+  max-width: 500px; /* 로고 크기 조정 */
   width: 100%;
 }
 
@@ -533,7 +533,7 @@ const startSimulation = () => {
   border-color: var(--orange);
 }
 
-/* Dashboard 双栏布局 */
+/* Dashboard 분할 화면 레이아웃 */
 .dashboard-section {
   display: flex;
   gap: 60px;
@@ -548,7 +548,7 @@ const startSimulation = () => {
   flex-direction: column;
 }
 
-/* 左侧面板 */
+/* 좌측 패널 */
 .left-panel {
   flex: 0.8;
 }
@@ -604,7 +604,7 @@ const startSimulation = () => {
   color: #999;
 }
 
-/* 项目模拟步骤介绍 */
+/* 프로젝트 시뮬레이션 단계 소개 */
 .steps-container {
   border: 1px solid var(--border);
   padding: 30px;
@@ -660,14 +660,14 @@ const startSimulation = () => {
   color: var(--gray-text);
 }
 
-/* 右侧交互控制台 */
+/* 우측 인터랙티브 콘솔 */
 .right-panel {
   flex: 1.2;
 }
 
 .console-box {
-  border: 1px solid #CCC; /* 外部实线 */
-  padding: 8px; /* 内边距形成双重边框感 */
+  border: 1px solid #CCC; /* 외부 실선 */
+  padding: 8px; /* 내부 패딩으로 이중 테두리 효과 */
 }
 
 .console-section {
@@ -835,7 +835,7 @@ const startSimulation = () => {
   overflow: hidden;
 }
 
-/* 可点击状态（非禁用） */
+/* 클릭 가능 상태 (비활성 아님) */
 .start-engine-btn:not(:disabled) {
   background: var(--black);
   border: 1px solid var(--black);
@@ -860,14 +860,14 @@ const startSimulation = () => {
   border: 1px solid #E5E5E5;
 }
 
-/* 引导动画：微妙的边框脉冲 */
+/* 가이드 애니메이션: 미세한 테두리 펄스 */
 @keyframes pulse-border {
   0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2); }
   70% { box-shadow: 0 0 0 6px rgba(0, 0, 0, 0); }
   100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
 }
 
-/* 响应式适配 */
+/* 반응형 대응 */
 @media (max-width: 1024px) {
   .dashboard-section {
     flex-direction: column;
