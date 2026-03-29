@@ -658,12 +658,13 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { 
-  prepareSimulation, 
-  getPrepareStatus, 
+import {
+  prepareSimulation,
+  getPrepareStatus,
+  getSimulation,
   getSimulationProfilesRealtime,
   getSimulationConfig,
-  getSimulationConfigRealtime 
+  getSimulationConfigRealtime
 } from '../api/simulation'
 
 const props = defineProps({
@@ -1098,14 +1099,15 @@ onMounted(async () => {
   // simulation state에서 모드 읽어오기
   if (props.simulationId) {
     try {
-      const stateRes = await getPrepareStatus({ simulation_id: props.simulationId })
-      const mode = stateRes?.data?.simulation_mode || stateRes?.data?.prepare_info?.simulation_mode
+      // getSimulation API로 state.json에서 직접 모드 읽기
+      const simRes = await getSimulation(props.simulationId)
+      const mode = simRes?.data?.simulation_mode
       if (mode) {
         simulationMode.value = mode
         addLog(`시뮬레이션 모드: ${mode === 'stakeholder_meeting' ? '🏛️ 이해관계자 회의' : '📱 소셜 미디어'}`)
       }
     } catch (e) {
-      // 상태 조회 실패 시 기본값 유지
+      // state 조회 실패 시 기본값 유지
     }
     addLog('Step2 환경 설정 초기화')
     startPrepareSimulation()
