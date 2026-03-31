@@ -527,6 +527,8 @@ class SimulationRunner:
                 state.runner_status = RunnerStatus.COMPLETED
                 state.completed_at = datetime.now().isoformat()
                 logger.info(f"시뮬레이션완료: {simulation_id}")
+                # 결과 JSON 자동 저장
+                cls._save_result_json(simulation_id, state, sim_dir)
             else:
                 state.runner_status = RunnerStatus.FAILED
                 # 메인 로그 파일에서 오류 정보 읽기
@@ -580,10 +582,125 @@ class SimulationRunner:
                 cls._stderr_files.pop(simulation_id, None)
     
     @classmethod
+    def _save_result_json(cls, simulation_id: str, state: SimulationRunState, sim_dir: str):
+        """시뮬레이션 완료 시 결과를 구조화된 JSON으로 저장
+
+        파일명: results_{시간}_{모델}_{모드}.json
+        저장 위치: 시뮬레이션 디렉토리 + 프로젝트 루트 results/ 폴더
+        """
+        try:
+            # 시뮬레이션 설정 로드
+            config = {}
+            config_path = os.path.join(sim_dir, "simulation_config.json")
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+
+            # state.json 로드
+            sim_state = {}
+            state_path = os.path.join(sim_dir, "state.json")
+            if os.path.exists(state_path):
+                with open(state_path, 'r', encoding='utf-8') as f:
+                    sim_state = json.load(f)
+
+            # 액션 로그 수집
+            actions = []
+            for platform in ["twitter", "reddit"]:
+                actions_path = os.path.join(sim_dir, platform, "actions.jsonl")
+                if os.path.exists(actions_path):
+                    with open(actions_path, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line:
+                                try:
+                                    actions.append(json.loads(line))
+                                except json.JSONDecodeError:
+                                    pass
+
+            # 모드, 모델 정보
+            sim_mode = sim_state.get("simulation_mode", "social_media")
+            model_name = os.environ.get("LLM_MODEL_NAME", "unknown")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            # 액션 통계
+            action_stats = {}
+            for a in actions:
+                action_type = a.get("action_type", a.get("event_type", "unknown"))
+                action_stats[action_type] = action_stats.get(action_type, 0) + 1
+
+            # 라운드별 요약
+            round_summaries = {}
+            for a in actions:
+                r = a.get("round", 0)
+                if r not in round_summaries:
+                    round_summaries[r] = {"round": r, "action_count": 0, "agents": set()}
+                round_summaries[r]["action_count"] += 1
+                if a.get("agent_id") is not None:
+                    round_summaries[r]["agents"].add(str(a.get("agent_id")))
+            # set → list 변환
+            for r in round_summaries:
+                round_summaries[r]["agents"] = list(round_summaries[r]["agents"])
+                round_summaries[r]["unique_agents"] = len(round_summaries[r]["agents"])
+
+            # 결과 JSON 구성
+            result = {
+                "meta": {
+                    "simulation_id": simulation_id,
+                    "project_id": sim_state.get("project_id", ""),
+                    "graph_id": sim_state.get("graph_id", ""),
+                    "simulation_mode": sim_mode,
+                    "model": model_name,
+                    "timestamp": timestamp,
+                    "started_at": state.started_at,
+                    "completed_at": state.completed_at,
+                },
+                "config_summary": {
+                    "total_rounds": state.total_rounds,
+                    "total_simulation_hours": state.total_simulation_hours,
+                    "agents_count": sim_state.get("profiles_count", 0),
+                    "entity_types": sim_state.get("entity_types", []),
+                    "enable_twitter": sim_state.get("enable_twitter", True),
+                    "enable_reddit": sim_state.get("enable_reddit", False),
+                },
+                "results": {
+                    "total_actions": len(actions),
+                    "twitter_actions": state.twitter_actions_count,
+                    "reddit_actions": state.reddit_actions_count,
+                    "action_distribution": action_stats,
+                    "rounds_completed": state.current_round,
+                },
+                "round_summaries": sorted(round_summaries.values(), key=lambda x: x["round"]),
+                "actions": actions,
+            }
+
+            # 파일명 생성
+            mode_label = "meeting" if sim_mode == "stakeholder_meeting" else "social"
+            filename = f"results_{timestamp}_{model_name}_{mode_label}.json"
+
+            # 1) 시뮬레이션 디렉토리에 저장
+            local_path = os.path.join(sim_dir, filename)
+            with open(local_path, 'w', encoding='utf-8') as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+
+            # 2) 프로젝트 루트 results/ 폴더에도 저장
+            results_dir = os.path.join(os.path.dirname(__file__), '../../results')
+            os.makedirs(results_dir, exist_ok=True)
+            global_path = os.path.join(results_dir, filename)
+            with open(global_path, 'w', encoding='utf-8') as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+
+            logger.info(f"결과 저장 완료: {filename} ({len(actions)}개 액션)")
+            logger.info(f"  └─ 로컬: {local_path}")
+            logger.info(f"  └─ 전역: {global_path}")
+
+        except Exception as e:
+            logger.error(f"결과 JSON 저장 실패: {e}")
+
+    @classmethod
     def _read_action_log(
-        cls, 
-        log_path: str, 
-        position: int, 
+        cls,
+        log_path: str,
+        position: int,
         state: SimulationRunState,
         platform: str
     ) -> int:
