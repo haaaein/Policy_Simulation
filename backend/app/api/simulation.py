@@ -1515,7 +1515,7 @@ def start_simulation():
 
         # 시뮬레이션 모드에 따라 platform 자동 결정
         manager = SimulationManager()
-        sim_state = manager.get_simulation_state(simulation_id)
+        sim_state = manager.get_simulation(simulation_id)
         if sim_state and sim_state.simulation_mode == "stakeholder_meeting":
             platform = "stakeholder_meeting"
             if max_rounds is None:
