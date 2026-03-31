@@ -385,7 +385,7 @@ class SimulationRunner:
         
         # 어떤 스크립트를 실행할지 확인 (스크립트는 backend/scripts/ 디렉토리에 위치)
         if platform == "stakeholder_meeting":
-            script_name = "run_stakeholder_meeting.py"
+            script_name = "run_meeting_simulation.py"
             state.twitter_running = True  # 포럼 역할로 재활용
             state.reddit_running = False
         elif platform == "twitter":

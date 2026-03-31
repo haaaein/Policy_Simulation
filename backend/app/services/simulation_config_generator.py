@@ -163,6 +163,9 @@ class SimulationParameters:
     # 플랫폼설정
     twitter_config: Optional[PlatformConfig] = None
     reddit_config: Optional[PlatformConfig] = None
+
+    # 회의 모드 설정 (stakeholder_meeting일 때만 사용)
+    meeting_config: Optional[Dict[str, Any]] = None
     
     # LLM설정
     llm_model: str = ""
@@ -185,6 +188,7 @@ class SimulationParameters:
             "event_config": asdict(self.event_config),
             "twitter_config": asdict(self.twitter_config) if self.twitter_config else None,
             "reddit_config": asdict(self.reddit_config) if self.reddit_config else None,
+            "meeting_config": self.meeting_config,
             "llm_model": self.llm_model,
             "llm_base_url": self.llm_base_url,
             "generated_at": self.generated_at,
@@ -373,6 +377,15 @@ class SimulationConfigGenerator:
                 echo_chamber_strength=0.6
             )
         
+        # ========== 회의 모드: 의제 생성 ==========
+        meeting_config = None
+        if simulation_mode == "stakeholder_meeting":
+            report_progress(current_step + 1, "회의 의제 생성 중...")
+            meeting_config = self._generate_meeting_config(
+                simulation_requirement, entities, time_config
+            )
+            reasoning_parts.append(f"회의 의제: {len(meeting_config.get('agenda_items', []))}개 라운드")
+
         # 최종 파라미터 구축
         params = SimulationParameters(
             simulation_id=simulation_id,
@@ -384,6 +397,7 @@ class SimulationConfigGenerator:
             event_config=event_config,
             twitter_config=twitter_config,
             reddit_config=reddit_config,
+            meeting_config=meeting_config,
             llm_model=self.model_name,
             llm_base_url=self.base_url,
             generation_reasoning=" | ".join(reasoning_parts)
@@ -421,6 +435,63 @@ class SimulationConfigGenerator:
         
         return "\n".join(context_parts)
     
+    def _generate_meeting_config(
+        self,
+        simulation_requirement: str,
+        entities: List[EntityNode],
+        time_config: TimeSimulationConfig
+    ) -> Dict[str, Any]:
+        """이해관계자 회의 의제 생성"""
+        total_rounds = time_config.total_simulation_hours * 60 // time_config.minutes_per_round
+        if total_rounds < 1:
+            total_rounds = 8
+
+        participant_names = [e.name for e in entities[:20]]
+
+        prompt = f"""정책 이해관계자 회의의 라운드별 의제를 생성하세요.
+
+회의 주제: {simulation_requirement}
+총 라운드 수: {total_rounds}
+참석자: {', '.join(participant_names)}
+
+다음 흐름으로 의제를 구성하세요:
+- 초반: 문제 제기 및 현황 공유
+- 중반: 핵심 이슈 분석, 이해관계자별 입장 발표
+- 후반: 토론, 수정안, 반론
+- 마지막: 합의 시도 및 마무리
+
+JSON 형식으로 반환:
+{{
+    "meeting_title": "<회의 제목>",
+    "max_rounds": {total_rounds},
+    "agenda_items": [
+        "라운드 1 의제: ...",
+        "라운드 2 의제: ...",
+        ...
+    ]
+}}"""
+
+        system_prompt = "당신은 정책 회의 진행자입니다. 순수 JSON으로 반환하세요. 모든 텍스트는 한국어로 작성하세요."
+
+        try:
+            result = self._call_llm_with_retry(prompt, system_prompt)
+            agenda_items = result.get("agenda_items", [])
+            # 라운드 수에 맞게 조정
+            while len(agenda_items) < total_rounds:
+                agenda_items.append(f"라운드 {len(agenda_items)+1}: 추가 토론")
+            return {
+                "meeting_title": result.get("meeting_title", simulation_requirement),
+                "max_rounds": total_rounds,
+                "agenda_items": agenda_items[:total_rounds],
+            }
+        except Exception as e:
+            logger.warning(f"회의 의제 LLM 생성 실패: {e}, 기본값 사용")
+            return {
+                "meeting_title": simulation_requirement,
+                "max_rounds": total_rounds,
+                "agenda_items": [f"라운드 {i+1}: 토론" for i in range(total_rounds)],
+            }
+
     def _summarize_entities(self, entities: List[EntityNode]) -> str:
         """생성개체요약"""
         lines = []
